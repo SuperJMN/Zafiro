@@ -39,6 +39,25 @@ public class SectionsBuilder(IServiceProvider provider)
         return this;
     }
 
+    public SectionsBuilder Group(string title, Action<SectionsBuilder> configure, bool isPrimary = true)
+    {
+        // Add a non-selectable header, then configured items
+        sections.Add(new SectionGroupHeader(title)
+        {
+            IsPrimary = isPrimary,
+        });
+
+        var inner = new SectionsBuilder(provider);
+        configure(inner);
+        foreach (var sec in inner.Build())
+        {
+            sec.IsPrimary = isPrimary;
+            sections.Add(sec);
+        }
+
+        return this;
+    }
+
     public SectionsBuilder Command(string name, ICommand command, object? icon, bool isPrimary = true)
     {
         sections.Add(new CommandSection(name, command, icon)

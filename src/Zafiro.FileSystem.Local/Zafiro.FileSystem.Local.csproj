@@ -6,9 +6,6 @@
     </PropertyGroup>
     <Import Project="..\Common.props" />
     <ItemGroup>
-        <PackageReference Include="TestableIO.System.IO.Abstractions" />
-    </ItemGroup>
-    <ItemGroup>
         <ProjectReference Include="..\Zafiro.FileSystem\Zafiro.FileSystem.csproj" />
     </ItemGroup>
 </Project>

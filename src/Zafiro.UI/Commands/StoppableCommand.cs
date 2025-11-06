@@ -3,7 +3,7 @@ using System.Reactive.Subjects;
 using System.Windows.Input;
 using CSharpFunctionalExtensions;
 
-namespace Zafiro.UI;
+namespace Zafiro.UI.Commands;
 
 public static class StoppableCommand
 {
@@ -16,7 +16,7 @@ public static class StoppableCommand
     {
         return new StoppableCommand<Unit, TOut>(_ => logic(), canStart);
     }
-    
+
     public static StoppableCommand<Unit, Unit> Create(IObservable<Unit> logic, Maybe<IObservable<bool>> canStart)
     {
         return new StoppableCommand<Unit, Unit>(_ => logic, canStart);

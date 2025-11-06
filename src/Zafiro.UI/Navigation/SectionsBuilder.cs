@@ -1,5 +1,4 @@
 using System.Reactive.Linq;
-using System.Windows.Input;
 using Zafiro.UI.Navigation.Sections;
 
 namespace Zafiro.UI.Navigation;
@@ -8,21 +7,24 @@ public class SectionsBuilder(IServiceProvider provider)
 {
     private readonly List<ISection> sections = new();
 
-    private static ISection CreateSection<T>(string name, IServiceProvider provider, object? icon = null, bool isPrimary = true) where T : class
+    private static ISection CreateSection<T>(string name, IServiceProvider provider, object? icon = null) where T : class
     {
         // Section content is no longer responsible for hosting a SectionScope.
         // We only use the section metadata and its RootType; content is unused here.
-        var contentSection = new ContentSection<T>(name, Observable.Empty<T>(), icon)
-        {
-            IsPrimary = isPrimary,
-        };
+        var contentSection = new ContentSection<T>(name, Observable.Empty<T>(), icon);
         return contentSection;
     }
 
-    public SectionsBuilder Add<T>(string name, object? icon = null, bool isPrimary = true) where T : class
+    public SectionsBuilder Add<T>(string name, object? icon = null) where T : class
     {
-        sections.Add(CreateSection<T>(name, provider, icon, isPrimary));
+        sections.Add(CreateSection<T>(name, provider, icon));
         return this;
+    }
+
+    // Backwards-compat overload: ignore isPrimary
+    public SectionsBuilder Add<T>(string name, object? icon, bool isPrimary) where T : class
+    {
+        return Add<T>(name, icon);
     }
 
     public IEnumerable<ISection> Build()
@@ -30,30 +32,15 @@ public class SectionsBuilder(IServiceProvider provider)
         return sections;
     }
 
-    public SectionsBuilder Separator(bool isPrimary = true)
+    public SectionsBuilder Separator()
     {
-        sections.Add(new SectionSeparator
-        {
-            IsPrimary = isPrimary,
-        });
+        sections.Add(new SectionSeparator());
         return this;
     }
 
-    public SectionsBuilder Command(string name, ICommand command, object? icon, bool isPrimary = true)
+    // Backwards-compat overload: ignore isPrimary
+    public SectionsBuilder Separator(bool isPrimary)
     {
-        sections.Add(new CommandSection(name, command, icon)
-        {
-            IsPrimary = isPrimary,
-        });
-        return this;
-    }
-
-    public SectionsBuilder Command(string name, Func<IServiceProvider, ICommand> createCommand, object? icon, bool isPrimary = true)
-    {
-        sections.Add(new CommandSection(name, createCommand(provider), icon)
-        {
-            IsPrimary = isPrimary,
-        });
-        return this;
+        return Separator();
     }
 }

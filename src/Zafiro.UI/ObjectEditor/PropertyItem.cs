@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.ComponentModel;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reflection;
-using ReactiveUI;
 using Zafiro.Values;
 
 namespace Zafiro.UI.ObjectEditor;
@@ -52,11 +48,11 @@ public abstract class PropertyItem<T> : ReactiveObject, IDisposable
     private void SubscribeToPropertyChangesOf(IEnumerable<INotifyPropertyChanged> observables)
     {
         var subscriptions = from observable in observables
-                            let subscription =
-                                Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(
-                                        h => observable.PropertyChanged += h, h => PropertyChanged -= h)
-                                    .Subscribe(args => OnTargetPropertyChanged(args.EventArgs.PropertyName))
-                            select subscription;
+            let subscription =
+                Observable.FromEventPattern<PropertyChangedEventHandler, PropertyChangedEventArgs>(
+                        h => observable.PropertyChanged += h, h => PropertyChanged -= h)
+                    .Subscribe(args => OnTargetPropertyChanged(args.EventArgs.PropertyName))
+            select subscription;
 
         foreach (var subscription in subscriptions) disposables.Add(subscription);
     }

@@ -1,6 +1,7 @@
 using CSharpFunctionalExtensions;
 using Zafiro.Progress;
 using Zafiro.Reactive;
+using Zafiro.UI.Commands;
 
 namespace Zafiro.UI.Jobs.Execution;
 

@@ -1,9 +1,9 @@
 using System;
-using Zafiro.Progress;
+using Zafiro.ProgressReporting;
 
 namespace Zafiro.Works;
 
 public interface IHaveProgress
 {
-    public IObservable<IProgress> Progress { get; }
+    public IObservable<Progress> Progress { get; }
 }

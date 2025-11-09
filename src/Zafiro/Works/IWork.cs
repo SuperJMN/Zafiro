@@ -1,11 +1,11 @@
 using System;
 using CSharpFunctionalExtensions;
-using Zafiro.Progress;
+using Zafiro.ProgressReporting;
 
 namespace Zafiro.Works;
 
 public interface IWork
 {
-    IObservable<IProgress> Progress { get; }
+    IObservable<Progress> Progress { get; }
     IObservable<Result> Execute();
 }

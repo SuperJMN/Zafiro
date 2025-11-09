@@ -1,5 +1,5 @@
 using CSharpFunctionalExtensions;
-using Zafiro.Progress;
+using Zafiro.ProgressReporting;
 using Zafiro.Reactive;
 using Zafiro.UI.Commands;
 
@@ -7,7 +7,7 @@ namespace Zafiro.UI.Jobs.Execution;
 
 public class UnstoppableExecution : IExecution
 {
-    public UnstoppableExecution(IObservable<Unit> observable, IObservable<IProgress> progress)
+    public UnstoppableExecution(IObservable<Unit> observable, IObservable<Progress> progress)
     {
         Progress = progress;
         var stoppable = StoppableCommand.Create(observable.ToSignal, Maybe<IObservable<bool>>.None);
@@ -16,5 +16,5 @@ public class UnstoppableExecution : IExecution
 
     public ReactiveCommandBase<Unit, Unit> Start { get; }
     public ReactiveCommandBase<Unit, Unit>? Stop { get; } = null;
-    public IObservable<IProgress> Progress { get; }
+    public IObservable<Progress> Progress { get; }
 }

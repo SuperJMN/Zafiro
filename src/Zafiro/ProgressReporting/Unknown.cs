@@ -1,5 +1,6 @@
-﻿namespace Zafiro.ProgressReporting;
+namespace Zafiro.ProgressReporting;
 
-public class Unknown : Progress
+public sealed record Unknown : Progress
 {
+    public static readonly Unknown Instance = new();
 }

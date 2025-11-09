@@ -4,13 +4,13 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using CSharpFunctionalExtensions;
-using Zafiro.Progress;
+using Zafiro.ProgressReporting;
 
 namespace Zafiro.Works;
 
 public class CompositeAction : IWork
 {
-    private readonly BehaviorSubject<IProgress> progressSubject = new(Unknown.Instance);
+    private readonly BehaviorSubject<Progress> progressSubject = new(Unknown.Instance);
 
     public CompositeAction(IList<IWork> children)
     {
@@ -21,7 +21,7 @@ public class CompositeAction : IWork
 
     public int MaxConcurrency { get; init; } = 3;
 
-    public IObservable<IProgress> Progress => progressSubject.AsObservable();
+    public IObservable<Progress> Progress => progressSubject.AsObservable();
 
     public IObservable<Result> Execute()
     {
@@ -43,7 +43,7 @@ public class CompositeAction : IWork
             .Select(list => list.Combine());
     }
 
-    private static IProgress GetProgress(IList<IProgress> list)
+    private static Progress GetProgress(IList<Progress> list)
     {
         return new Unknown();
     }

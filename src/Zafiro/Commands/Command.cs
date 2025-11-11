@@ -56,7 +56,7 @@ public class Command(Maybe<ILogger> logger) : ICommand
 
         if (process.ExitCode == 0)
         {
-            Logger.Information("Command succeeded:\n{CombinedOutput}", combinedOutput);
+            Logger.Debug("Command succeeded:\n{CombinedOutput}", combinedOutput);
             return Result.Success(output);
         }
 
@@ -73,13 +73,6 @@ public class Command(Maybe<ILogger> logger) : ICommand
     {
         var safeArgs = SanitizeSensitiveInfo(arguments);
 
-        Logger.Information(
-            "Executing command: {Command} with arguments: {Arguments} in directory: {WorkingDirectory}",
-            command,
-            safeArgs,
-            string.IsNullOrWhiteSpace(workingDirectory) ? "current" : workingDirectory
-        );
-
         if (environmentVariables?.Count > 0)
         {
             var sanitizedEnv = environmentVariables.ToDictionary(
@@ -89,7 +82,22 @@ public class Command(Maybe<ILogger> logger) : ICommand
                     : kvp.Value
             );
 
-            Logger.Information("Environment variables: {@EnvironmentVariables}", sanitizedEnv);
+            Logger.Debug(
+                "Executing command: {Command} with arguments: {Arguments} in directory: {WorkingDirectory} with environment variables: {@EnvironmentVariables}",
+                command,
+                safeArgs,
+                string.IsNullOrWhiteSpace(workingDirectory) ? "current" : workingDirectory,
+                sanitizedEnv
+            );
+        }
+        else
+        {
+            Logger.Debug(
+                "Executing command: {Command} with arguments: {Arguments} in directory: {WorkingDirectory}",
+                command,
+                safeArgs,
+                string.IsNullOrWhiteSpace(workingDirectory) ? "current" : workingDirectory
+            );
         }
     }
 

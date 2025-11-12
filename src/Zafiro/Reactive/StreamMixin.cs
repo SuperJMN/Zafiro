@@ -18,7 +18,7 @@ public static class StreamMixin
     /// </summary>
     public static IObservable<Result> WriteTo(this IObservable<byte> source, Stream output,
         CancellationToken cancellationToken = default, TimeSpan? chunkReadTimeout = default, IScheduler? scheduler = default,
-        int bufferSize = 4096)
+int bufferSize = 1_048_576)
     {
         scheduler ??= Scheduler.Default;
         chunkReadTimeout ??= TimeSpan.FromDays(1);

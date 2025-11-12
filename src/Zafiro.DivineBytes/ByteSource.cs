@@ -1,5 +1,7 @@
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Text;
+using System.Linq;
 using CSharpFunctionalExtensions;
 using Zafiro.Reactive;
 
@@ -32,7 +34,8 @@ public class ByteSource(IObservable<byte[]> bytes) : IByteSource
     /// <returns>An IByteSource.</returns>
     public static IByteSource FromBytes(byte[] bytes, int bufferSize = 4096)
     {
-        return new ByteSource(bytes.ToByteStream(bufferSize));
+        // Avoid per-byte observables and avoid extra ToArray() copies; emit chunks directly
+        return FromByteObservable(bytes.Chunk(bufferSize).ToObservable(Scheduler.Immediate));
     }
 
     /// <summary>

@@ -32,7 +32,11 @@ public static class StreamMixin
         chunkReadTimeout ??= TimeSpan.FromDays(1);
 
         return source
-            .Select(chunk => Observable.FromAsync(() => Result.Try(() => output.WriteAsync(chunk.ToArray(), 0, chunk.Length, cancellationToken)), scheduler).Timeout(chunkReadTimeout.Value, scheduler))
+            .Select(chunk =>
+                Observable.FromAsync(
+                    () => Result.Try(() => output.WriteAsync(chunk, 0, chunk.Length, cancellationToken)),
+                    scheduler)
+                .Timeout(chunkReadTimeout.Value, scheduler))
             .Concat()
             .DefaultIfEmpty(Result.Success());
     }

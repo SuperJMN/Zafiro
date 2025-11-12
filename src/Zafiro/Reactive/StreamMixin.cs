@@ -13,6 +13,9 @@ namespace Zafiro.Reactive;
 
 public static class StreamMixin
 {
+    /// <summary>
+    /// Writes a stream of single bytes by buffering into arrays and delegating to the array-based overload (copying by default).
+    /// </summary>
     public static IObservable<Result> WriteTo(this IObservable<byte> source, Stream output,
         CancellationToken cancellationToken = default, TimeSpan? chunkReadTimeout = default, IScheduler? scheduler = default,
         int bufferSize = 4096)
@@ -26,6 +29,10 @@ public static class StreamMixin
             .WriteTo(output, chunkReadTimeout, scheduler, cancellationToken);
     }
 
+    /// <summary>
+    /// Default: zero-copy, high-performance. Requires that the source does NOT mutate or reuse arrays until the write completes.
+    /// If in doubt, use <see cref=\"WriteToSafe\"/>.
+    /// </summary>
     public static IObservable<Result> WriteTo(this IObservable<byte[]> source, Stream output, TimeSpan? chunkReadTimeout = default, IScheduler? scheduler = default, CancellationToken cancellationToken = default)
     {
         scheduler ??= Scheduler.Default;
@@ -40,6 +47,33 @@ public static class StreamMixin
             .Concat()
             .DefaultIfEmpty(Result.Success());
     }
+
+    /// <summary>
+    /// Safe variant: performs a per-chunk copy to prevent data corruption when the producer reuses buffers.
+    /// </summary>
+    public static IObservable<Result> WriteToSafe(this IObservable<byte[]> source, Stream output, TimeSpan? chunkReadTimeout = default, IScheduler? scheduler = default, CancellationToken cancellationToken = default)
+    {
+        scheduler ??= Scheduler.Default;
+        chunkReadTimeout ??= TimeSpan.FromDays(1);
+
+        return source
+            .Select(chunk =>
+            {
+                var copy = chunk.ToArray();
+                return Observable.FromAsync(
+                        () => Result.Try(() => output.WriteAsync(copy, 0, copy.Length, cancellationToken)),
+                        scheduler)
+                    .Timeout(chunkReadTimeout.Value, scheduler);
+            })
+            .Concat()
+            .DefaultIfEmpty(Result.Success());
+    }
+
+    /// <summary>
+    /// Alias for zero-copy default.
+    /// </summary>
+    public static IObservable<Result> WriteToZeroCopy(this IObservable<byte[]> source, Stream output, TimeSpan? chunkReadTimeout = default, IScheduler? scheduler = default, CancellationToken cancellationToken = default)
+        => source.WriteTo(output, chunkReadTimeout, scheduler, cancellationToken);
 
     public static async Task<string> ReadToEnd(this Stream stream, Encoding? encoding = null)
     {

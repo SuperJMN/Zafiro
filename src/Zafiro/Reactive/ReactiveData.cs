@@ -8,7 +8,7 @@ namespace Zafiro.Reactive;
 
 public static class ReactiveData
 {
-    private const int DefaultBufferSize = 4096;
+private const int DefaultBufferSize = 1_048_576;
 
     /// <summary>
     /// Creates an observable sequence from a stream factory.
@@ -34,7 +34,7 @@ public static class ReactiveData
     /// <param name="stream">The stream to convert.</param>
     /// <param name="bufferSize">The size of the buffer used to read from the stream (80KB by default).</param>
     /// <returns>An observable sequence of byte arrays read from the stream.</returns>
-    public static IObservable<byte[]> ToObservable(this Stream stream, int bufferSize = 81920)
+public static IObservable<byte[]> ToObservable(this Stream stream, int bufferSize = 1_048_576)
     {
         return Observable.Create<byte[]>(async (observer, cancellationToken) =>
         {
@@ -103,7 +103,7 @@ public static class ReactiveData
     /// <param name="stream">The stream to convert.</param>
     /// <param name="bufferSize">The size of the buffer used to read from the stream (80KB by default).</param>
     /// <returns>An observable sequence of Memory<byte> directly referencing the read data.</returns>
-    public static IObservable<Memory<byte>> ToObservableMemory(this Stream stream, int bufferSize = 81920)
+public static IObservable<Memory<byte>> ToObservableMemory(this Stream stream, int bufferSize = 1_048_576)
     {
         return Observable.Create<Memory<byte>>(async (observer, cancellationToken) =>
         {

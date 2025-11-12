@@ -32,7 +32,7 @@ public class ByteSource(IObservable<byte[]> bytes) : IByteSource
     /// <param name="bytes">Source array of bytes.</param>
     /// <param name="bufferSize">Size of each emitted chunk.</param>
     /// <returns>An IByteSource.</returns>
-    public static IByteSource FromBytes(byte[] bytes, int bufferSize = 4096)
+public static IByteSource FromBytes(byte[] bytes, int bufferSize = 1_048_576)
     {
         // Avoid per-byte observables and avoid extra ToArray() copies; emit chunks directly
         return FromByteObservable(bytes.Chunk(bufferSize).ToObservable(Scheduler.Immediate));
@@ -82,7 +82,7 @@ public class ByteSource(IObservable<byte[]> bytes) : IByteSource
     public static IByteSource FromString(
         string str,
         Encoding? encoding,
-        int bufferSize = 4096)
+int bufferSize = 1_048_576)
     {
         encoding ??= Encoding.UTF8;
 

@@ -11,6 +11,8 @@ public sealed class SectionSessionFactory(IServiceProvider provider) : ISectionS
 
         if (section is IInitializableSection initializable)
         {
+            await Task.Yield();
+
             var result = await initializable.Initialize(session.Navigator);
             if (result.IsFailure)
             {

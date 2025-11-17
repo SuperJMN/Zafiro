@@ -5,5 +5,5 @@ namespace Zafiro.UI.Navigation;
 
 public interface ISectionSessionFactory
 {
-    Task<Result<SectionScope>> Create(IContentSection section);
+    Task<Result<SectionScope>> Create(ISection section);
 }

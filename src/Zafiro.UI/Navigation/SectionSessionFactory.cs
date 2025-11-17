@@ -12,7 +12,7 @@ public sealed class SectionSessionFactory : ISectionSessionFactory
         this.provider = provider;
     }
 
-    public async Task<Result<SectionScope>> Create(IContentSection section)
+    public async Task<Result<SectionScope>> Create(ISection section)
     {
         var session = new SectionScope(provider, section.RootType);
 

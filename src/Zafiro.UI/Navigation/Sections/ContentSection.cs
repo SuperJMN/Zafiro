@@ -1,12 +1,24 @@
 using System.Reactive.Linq;
+using ReactiveUI.SourceGenerators;
 
 namespace Zafiro.UI.Navigation.Sections;
 
-public class ContentSection<T>(string name, IObservable<T> content, object? icon) : Section, IContentSection where T : class
+public partial class ContentSection<T> : ReactiveObject, ISection where T : class
 {
-    public string Name { get; } = name;
+    [Reactive] private bool isVisible = true;
+    [Reactive] private int sortOrder = 0;
+
+    public ContentSection(string name, IObservable<T> content, object? icon)
+    {
+        Name = name;
+        Icon = icon;
+        Content = content.Select(arg => (object)arg);
+        RootType = typeof(T);
+    }
+
+    public string Name { get; }
     public string FriendlyName => Name;
-    public object? Icon { get; } = icon;
-    public Type RootType { get; } = typeof(T);
-    public IObservable<object> Content => content.Select(object (arg) => arg);
+    public object? Icon { get; }
+    public Type RootType { get; }
+    public IObservable<object> Content { get; }
 }

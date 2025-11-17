@@ -32,15 +32,4 @@ public class SectionsBuilder(IServiceProvider provider)
         return sections;
     }
 
-    public SectionsBuilder Separator()
-    {
-        sections.Add(new SectionSeparator());
-        return this;
-    }
-
-    // Backwards-compat overload: ignore isPrimary
-    public SectionsBuilder Separator(bool isPrimary)
-    {
-        return Separator();
-    }
 }

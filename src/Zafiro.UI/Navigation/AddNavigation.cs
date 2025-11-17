@@ -18,9 +18,9 @@ public static class AddNavigation
     {
         serviceCollection.AddScoped<INavigator>(provider => new Navigator(provider, logger.AsMaybe(), scheduler));
 
-        serviceCollection.AddSingleton<IEnumerable<ISection>>(provider =>
+        serviceCollection.AddSingleton<IEnumerable<ISection>>(_ =>
         {
-            var sectionsBuilder = new SectionsBuilder(provider);
+            var sectionsBuilder = new SectionsBuilder();
             configure(sectionsBuilder);
             return sectionsBuilder.Build();
         });

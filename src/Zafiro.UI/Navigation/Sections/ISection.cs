@@ -11,5 +11,4 @@ public interface ISection : INotifyPropertyChanged
     string FriendlyName { get; }
     object? Icon { get; }
     IObservable<object> Content { get; }
-    Type RootType { get; }
 }

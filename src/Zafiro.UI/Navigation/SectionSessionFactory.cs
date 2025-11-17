@@ -3,27 +3,20 @@ using Zafiro.UI.Navigation.Sections;
 
 namespace Zafiro.UI.Navigation;
 
-public sealed class SectionSessionFactory : ISectionSessionFactory
+public sealed class SectionSessionFactory(IServiceProvider provider) : ISectionSessionFactory
 {
-    private readonly IServiceProvider provider;
-
-    public SectionSessionFactory(IServiceProvider provider)
-    {
-        this.provider = provider;
-    }
-
     public async Task<Result<SectionScope>> Create(ISection section)
     {
-        var session = new SectionScope(provider, section.RootType);
+        var session = new SectionScope(provider);
 
-        // Defer the initial navigation to avoid constructor-time cycles
-        await Task.Yield();
-
-        var result = await session.Navigator.Go(section.RootType);
-        if (result.IsFailure)
+        if (section is IInitializableSection initializable)
         {
-            session.Dispose();
-            return Result.Failure<SectionScope>(result.Error);
+            var result = await initializable.Initialize(session.Navigator);
+            if (result.IsFailure)
+            {
+                session.Dispose();
+                return Result.Failure<SectionScope>(result.Error);
+            }
         }
 
         return Result.Success(session);

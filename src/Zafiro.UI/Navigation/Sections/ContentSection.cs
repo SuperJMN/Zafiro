@@ -1,24 +1,28 @@
 using System.Reactive.Linq;
+using CSharpFunctionalExtensions;
 using ReactiveUI.SourceGenerators;
+using Zafiro.UI.Navigation;
 
 namespace Zafiro.UI.Navigation.Sections;
 
-public partial class ContentSection<T> : ReactiveObject, ISection where T : class
+public partial class ContentSection<T> : ReactiveObject, ISection, IInitializableSection where T : class
 {
     [Reactive] private bool isVisible = true;
     [Reactive] private int sortOrder = 0;
+    private readonly Func<INavigator, Task<Result<Unit>>> initialize;
 
-    public ContentSection(string name, IObservable<T> content, object? icon)
+    public ContentSection(string name, IObservable<T> content, object? icon, Func<INavigator, Task<Result<Unit>>> initialize)
     {
         Name = name;
         Icon = icon;
         Content = content.Select(arg => (object)arg);
-        RootType = typeof(T);
+        this.initialize = initialize;
     }
 
     public string Name { get; }
     public string FriendlyName => Name;
     public object? Icon { get; }
-    public Type RootType { get; }
     public IObservable<object> Content { get; }
+
+    async Task<Result<Unit>> IInitializableSection.Initialize(INavigator navigator) => await initialize(navigator);
 }

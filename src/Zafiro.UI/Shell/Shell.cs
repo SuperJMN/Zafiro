@@ -19,10 +19,10 @@ public partial class Shell : ReactiveObject, IShell
     private readonly CompositeDisposable disposables = new();
     private readonly IServiceProvider provider;
     private readonly ISectionSessionFactory sectionSessionFactory;
-    private readonly Dictionary<IContentSection, Lazy<Task<Result<SectionScope>>>> sessions = new();
+    private readonly Dictionary<ISection, Lazy<Task<Result<SectionScope>>>> sessions = new();
 
     [Reactive] private INavigator navigator;
-    [Reactive] private IContentSection? selectedSection;
+    [Reactive] private ISection? selectedSection;
 
     public Shell(ShellProperties shellProperties, IEnumerable<ISection> sections, IServiceProvider provider)
     {
@@ -57,7 +57,7 @@ public partial class Shell : ReactiveObject, IShell
                 .DisposeWith(disposables);
         }
 
-        SelectedSection = Sections.OfType<IContentSection>().FirstOrDefault();
+        SelectedSection = Sections.FirstOrDefault();
         Header = shellProperties.Header;
     }
 
@@ -67,10 +67,10 @@ public partial class Shell : ReactiveObject, IShell
 
     public void GoToSection(string sectionName)
     {
-        SelectedSection = Sections.OfType<IContentSection>().First(x => x.Name == sectionName);
+        SelectedSection = Sections.First(x => x.Name == sectionName);
     }
 
-    private Task<Result<SectionScope>> GetOrCreate(IContentSection section)
+    private Task<Result<SectionScope>> GetOrCreate(ISection section)
     {
         if (!sessions.TryGetValue(section, out var lazyTask))
         {

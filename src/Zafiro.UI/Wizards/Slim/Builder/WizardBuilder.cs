@@ -1,4 +1,7 @@
+using System;
+using System.Reactive.Linq;
 using CSharpFunctionalExtensions;
+using Zafiro.UI;
 using Zafiro.UI.Commands;
 
 namespace Zafiro.UI.Wizards.Slim.Builder;
@@ -22,7 +25,8 @@ public static class WizardBuilder
         var step = new StepDefinition<Unit, TPage, TResult>(
             (_) => pageFactory(),
             command,
-            title);
+            title,
+            (page, _) => Observable.Return(title ?? string.Empty));
 
         return new WizardBuilder<TResult>(new[] { step });
     }
@@ -42,11 +46,43 @@ public static class WizardBuilder
     }
 
     /// <summary>
-    /// Starts a wizard with the given page and title.
+    /// Starts a wizard with the given page and static title.
+    /// This is equivalent to providing an IObservable&lt;string&gt; via Observable.Return(title).
     /// </summary>
     public static StepBuilder<Unit, TPage> StartWith<TPage>(Func<TPage> pageFactory, string title)
     {
-        return new StepBuilder<Unit, TPage>(Array.Empty<IStepDefinition>(), _ => pageFactory(), title);
+        return new StepBuilder<Unit, TPage>(
+            Array.Empty<IStepDefinition>(),
+            _ => pageFactory(),
+            title,
+            (page, _) => Observable.Return(title ?? string.Empty));
+    }
+
+    /// <summary>
+    /// Starts a wizard using the page's own reactive title when it implements IHaveTitle.
+    /// </summary>
+    public static StepBuilder<Unit, TPage> StartWith<TPage>(Func<TPage> pageFactory)
+        where TPage : IHaveTitle
+    {
+        return new StepBuilder<Unit, TPage>(
+            Array.Empty<IStepDefinition>(),
+            _ => pageFactory(),
+            title: string.Empty,
+            (page, _) => page.Title);
+    }
+
+    /// <summary>
+    /// Starts a wizard with a page and a custom reactive title.
+    /// </summary>
+    public static StepBuilder<Unit, TPage> StartWith<TPage>(
+        Func<TPage> pageFactory,
+        Func<TPage, IObservable<string>> title)
+    {
+        return new StepBuilder<Unit, TPage>(
+            Array.Empty<IStepDefinition>(),
+            _ => pageFactory(),
+            title: string.Empty,
+            (page, _) => title(page));
     }
 }
 
@@ -58,11 +94,44 @@ public class WizardBuilder<TResult>(IEnumerable<IStepDefinition> steps)
     private readonly List<IStepDefinition> steps = steps.ToList();
 
     /// <summary>
-    /// Adds the next step, whose page depends on the previous result.
+    /// Adds the next step, whose page depends on the previous result and has a static title.
+    /// This is equivalent to providing an IObservable&lt;string&gt; via Observable.Return(title).
     /// </summary>
     public StepBuilder<TResult, TNextPage> Then<TNextPage>(Func<TResult, TNextPage> pageFactory, string title)
     {
-        return new StepBuilder<TResult, TNextPage>(this.steps, prev => pageFactory(prev), title);
+        return new StepBuilder<TResult, TNextPage>(
+            this.steps,
+            prev => pageFactory(prev),
+            title,
+            (page, previous) => Observable.Return(title ?? string.Empty));
+    }
+
+    /// <summary>
+    /// Adds the next step, whose page depends on the previous result and whose title comes from the page itself
+    /// when it implements IHaveTitle.
+    /// </summary>
+    public StepBuilder<TResult, TNextPage> Then<TNextPage>(Func<TResult, TNextPage> pageFactory)
+        where TNextPage : IHaveTitle
+    {
+        return new StepBuilder<TResult, TNextPage>(
+            this.steps,
+            prev => pageFactory(prev),
+            title: string.Empty,
+            (page, previous) => page.Title);
+    }
+
+    /// <summary>
+    /// Adds the next step, whose page depends on the previous result and uses a custom reactive title.
+    /// </summary>
+    public StepBuilder<TResult, TNextPage> Then<TNextPage>(
+        Func<TResult, TNextPage> pageFactory,
+        Func<TNextPage, IObservable<string>> title)
+    {
+        return new StepBuilder<TResult, TNextPage>(
+            this.steps,
+            prev => pageFactory(prev),
+            title: string.Empty,
+            (page, previous) => title(page));
     }
 
     /// <summary>
@@ -154,8 +223,18 @@ public class WizardBuilder<TResult>(IEnumerable<IStepDefinition> steps)
         List<IStepDefinition> normal = steps[..^1];
         IStepDefinition lastStep = steps[^1];
 
-        var normalSteps = normal.Select(def => new WizardStep(StepKind.Normal, def.Title, def.CreatePage, def.GetNextCommand));
-        var allSteps = normalSteps.Append(new WizardStep(lastStepKind, lastStep.Title, lastStep.CreatePage, lastStep.GetNextCommand));
+        var normalSteps = normal.Select(def => new WizardStep(
+            StepKind.Normal,
+            def.Title,
+            def.CreatePage,
+            def.GetNextCommand,
+            def.GetTitle));
+        var allSteps = normalSteps.Append(new WizardStep(
+            lastStepKind,
+            lastStep.Title,
+            lastStep.CreatePage,
+            lastStep.GetNextCommand,
+            lastStep.GetTitle));
 
         return new SlimWizard<TResult>(allSteps.Cast<IWizardStep>().ToList());
     }

@@ -1,3 +1,5 @@
+using System;
+
 namespace Zafiro.UI.Wizards.Slim;
 
 /// <summary>
@@ -8,8 +10,11 @@ public interface IPage
     /// <summary>Gets the view model or content associated with the page.</summary>
     object Content { get; }
 
-    /// <summary>Gets the page title.</summary>
+    /// <summary>Gets the static page title.</summary>
     string Title { get; }
+
+    /// <summary>Gets the reactive title stream for this page.</summary>
+    IObservable<string> TitleObservable { get; }
 
     /// <summary>Gets the zero-based page index within the wizard.</summary>
     public int Index { get; }

@@ -1,4 +1,7 @@
+using System;
+using System.Reactive.Linq;
 using CSharpFunctionalExtensions;
+using Zafiro.UI;
 using Zafiro.UI.Commands;
 
 namespace Zafiro.UI.Wizards.Slim.Builder;
@@ -12,9 +15,13 @@ namespace Zafiro.UI.Wizards.Slim.Builder;
 public class StepDefinition<TPrevious, TPage, TResult>(
     Func<TPrevious, TPage> pageFactory,
     Func<TPage, TPrevious, IEnhancedCommand<Result<TResult>>>? nextCommandFactory,
-    string title)
+    string title,
+    Func<TPage, TPrevious, IObservable<string>>? titleFactory = null)
     : IStepDefinition
 {
+    private readonly Func<TPage, TPrevious, IObservable<string>> resolvedTitleFactory =
+        titleFactory ?? ((page, previous) => Observable.Return(title ?? string.Empty));
+
     private TPrevious previousResult = default!;
 
     /// <inheritdoc />
@@ -36,5 +43,12 @@ public class StepDefinition<TPrevious, TPage, TResult>(
         var typedPage = (TPage)page;
         var typedCommand = nextCommandFactory(typedPage, previousResult);
         return new CommandAdapter<Result<TResult>, Result<object>>(typedCommand, result => result.Map(x => (object)x));
+    }
+
+    /// <inheritdoc />
+    public IObservable<string> GetTitle(object page)
+    {
+        var typedPage = (TPage)page;
+        return resolvedTitleFactory(typedPage, previousResult);
     }
 }

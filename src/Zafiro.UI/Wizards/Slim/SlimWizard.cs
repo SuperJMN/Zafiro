@@ -88,7 +88,8 @@ public sealed class SlimWizard<TResult> : ReactiveObject, ISlimWizard<TResult>
             var pageInstance = step.CreatePage(param) ??
                                throw new InvalidOperationException($"Wizard step at index {s.CurrentIndex} returned a null page.");
             var nextCommand = CreateNextCommand((s.CurrentIndex, step), pageInstance, hasFinished);
-            return new Page(s.CurrentIndex, pageInstance, nextCommand, step.Title);
+            var titleObservable = step.GetTitle(pageInstance);
+            return new Page(s.CurrentIndex, pageInstance, nextCommand, step.Title, titleObservable);
         })
         .Replay(1)
         .RefCount();

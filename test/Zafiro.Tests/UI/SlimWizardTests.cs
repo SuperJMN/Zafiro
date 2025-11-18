@@ -27,7 +27,12 @@ public class SlimWizardTests
     [Fact]
     public void Step_without_next_command_throws()
     {
-        var step = new WizardStep(StepKind.Normal, string.Empty, _ => new object(), _ => null);
+        var step = new WizardStep(
+            StepKind.Normal,
+            string.Empty,
+            _ => new object(),
+            _ => null,
+            _ => Observable.Return(string.Empty));
         var steps = new List<IWizardStep> { step };
 
         var ex = Assert.Throws<ReactiveUI.UnhandledErrorException>(() => { new SlimWizard<object>(steps); });
@@ -41,7 +46,8 @@ public class SlimWizardTests
             StepKind.Normal,
             string.Empty,
             _ => null!,
-            _ => ReactiveCommand.Create(() => Result.Success(new object())).Enhance());
+            _ => ReactiveCommand.Create(() => Result.Success(new object())).Enhance(),
+            _ => Observable.Return(string.Empty));
         var steps = new List<IWizardStep> { step };
 
         var ex = Assert.Throws<ReactiveUI.UnhandledErrorException>(() => { new SlimWizard<object>(steps); });

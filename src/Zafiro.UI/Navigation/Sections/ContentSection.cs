@@ -13,10 +13,10 @@ public partial class ContentSection<T> : ReactiveObject, ISection, IInitializabl
 
     public ContentSection(string name, IObservable<T> content, object? icon, Func<INavigator, Task<Result<Unit>>> initialize)
     {
+        this.initialize = initialize;
         Name = name;
         Icon = icon;
         Content = content.Select(arg => (object)arg);
-        this.initialize = initialize;
     }
 
     public string Name { get; }
@@ -24,5 +24,5 @@ public partial class ContentSection<T> : ReactiveObject, ISection, IInitializabl
     public object? Icon { get; }
     public IObservable<object> Content { get; }
 
-    async Task<Result<Unit>> IInitializableSection.Initialize(INavigator navigator) => await initialize(navigator);
+    public Task<Result<Unit>> Initialize(INavigator navigator) => initialize(navigator);
 }

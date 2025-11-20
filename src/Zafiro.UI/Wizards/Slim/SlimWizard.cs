@@ -111,11 +111,16 @@ public sealed class SlimWizard<TResult> : ReactiveObject, ISlimWizard<TResult>
             .Successes()
             .Subscribe(value => intents.OnNext(new NextIntent(value)));
 
+        var nextIsExecuting = currentTypedPageObservable
+            .Select(p => ((IReactiveCommand)p.NextCommand).IsExecuting)
+            .Switch()
+            .StartWith(false);
+
         var canGoBack = currentStepObservable
-            .CombineLatest(hasFinished, (step, finished) =>
+            .CombineLatest(hasFinished, nextIsExecuting, (step, finished, executingNext) =>
             {
                 bool validIndex = step.Index > 0 && !(step.Index == TotalPages - 1 && step.Step.Kind == StepKind.Completion);
-                return validIndex && !finished;
+                return validIndex && !finished && !executingNext;
             });
 
         Back = ReactiveCommand.Create(() => intents.OnNext(new BackIntent()), canGoBack).Enhance();

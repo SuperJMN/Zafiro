@@ -17,12 +17,12 @@ public partial class ContentSection<T> : ReactiveObject, ISection, IInitializabl
         Name = name;
         Icon = icon;
         Content = content.Select(arg => (object)arg);
-        Group = group ?? SectionGroup.Ungrouped;
+        Group = group;
     }
 
     public string Name { get; }
     public string FriendlyName => Name;
-    public SectionGroup Group { get; }
+    public SectionGroup? Group { get; }
     public object? Icon { get; }
     public IObservable<object> Content { get; }
 

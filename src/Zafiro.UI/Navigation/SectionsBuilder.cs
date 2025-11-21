@@ -11,9 +11,9 @@ public class SectionsBuilder
     /// Add a section whose initial content is resolved via DI using the view model type <typeparamref name="T"/>.
     /// Callers only provide a name and optional icon.
     /// </summary>
-    public SectionsBuilder Add<T>(string name, object? icon = null) where T : class
+    public SectionsBuilder Add<T>(string name, object? icon = null, SectionGroup? group = null) where T : class
     {
-        return Add(name, Observable.Empty<T>(), icon);
+        return Add(name, Observable.Empty<T>(), icon, group);
     }
 
     /// <summary>
@@ -21,9 +21,9 @@ public class SectionsBuilder
     /// The type parameter <typeparamref name="T"/> is still used internally as the DI key that
     /// determines the initial navigation target for this section.
     /// </summary>
-    public SectionsBuilder Add<T>(string name, IObservable<T> initialContent, object? icon = null) where T : class
+    public SectionsBuilder Add<T>(string name, IObservable<T> initialContent, object? icon = null, SectionGroup? group = null) where T : class
     {
-        sections.Add(new ContentSection<T>(name, initialContent, icon, navigator => navigator.Go(typeof(T))));
+        sections.Add(new ContentSection<T>(name, initialContent, icon, navigator => navigator.Go(typeof(T)), group));
         return this;
     }
 

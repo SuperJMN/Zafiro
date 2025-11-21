@@ -9,6 +9,7 @@ public interface ISection : INotifyPropertyChanged
 
     string Name { get; }
     string FriendlyName { get; }
+    SectionGroup Group { get; }
     object? Icon { get; }
     IObservable<object> Content { get; }
 }

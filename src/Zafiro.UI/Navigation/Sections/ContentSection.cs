@@ -11,16 +11,18 @@ public partial class ContentSection<T> : ReactiveObject, ISection, IInitializabl
     [Reactive] private int sortOrder = 0;
     private readonly Func<INavigator, Task<Result<Unit>>> initialize;
 
-    public ContentSection(string name, IObservable<T> content, object? icon, Func<INavigator, Task<Result<Unit>>> initialize)
+    public ContentSection(string name, IObservable<T> content, object? icon, Func<INavigator, Task<Result<Unit>>> initialize, SectionGroup? group = null)
     {
         this.initialize = initialize;
         Name = name;
         Icon = icon;
         Content = content.Select(arg => (object)arg);
+        Group = group ?? SectionGroup.Ungrouped;
     }
 
     public string Name { get; }
     public string FriendlyName => Name;
+    public SectionGroup Group { get; }
     public object? Icon { get; }
     public IObservable<object> Content { get; }
 

@@ -39,16 +39,10 @@ public class HttpUriContentProvider : IUriContentProvider, IDisposable
                 return Result.Failure<IByteSource>($"Unsupported URI scheme: {uri.Scheme}. Only HTTP and HTTPS are supported.");
             }
 
-            var response = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                response.Dispose();
-                return Result.Failure<IByteSource>($"Error downloading from {uri}: {response.StatusCode} - {response.ReasonPhrase}");
-            }
-
             var byteSource = ByteSource.FromAsyncStreamFactory(async () =>
             {
+                var response = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+
                 try
                 {
                     response.EnsureSuccessStatusCode();

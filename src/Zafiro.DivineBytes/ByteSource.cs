@@ -1,4 +1,5 @@
 using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
 using System.Linq;
@@ -12,6 +13,8 @@ namespace Zafiro.DivineBytes;
 /// </summary>
 public class ByteSource(IObservable<byte[]> bytes) : IByteSource
 {
+    private const int DefaultBufferSize = 1_048_576;
+
     /// <summary>
     /// Exposes the underlying observable of byte[] blocks.
     /// </summary>
@@ -32,7 +35,7 @@ public class ByteSource(IObservable<byte[]> bytes) : IByteSource
     /// <param name="bytes">Source array of bytes.</param>
     /// <param name="bufferSize">Size of each emitted chunk.</param>
     /// <returns>An IByteSource.</returns>
-public static IByteSource FromBytes(byte[] bytes, int bufferSize = 1_048_576)
+    public static IByteSource FromBytes(byte[] bytes, int bufferSize = DefaultBufferSize)
     {
         // Avoid per-byte observables and avoid extra ToArray() copies; emit chunks directly
         return FromByteObservable(bytes.Chunk(bufferSize).ToObservable(Scheduler.Immediate));
@@ -64,11 +67,43 @@ public static IByteSource FromBytes(byte[] bytes, int bufferSize = 1_048_576)
     /// The getLength function can provide a length if known.
     /// </summary>
     /// <param name="streamFactory">A factory method that returns a Stream to read from.</param>
+    /// <param name="bufferSize">Size of each emitted chunk.</param>
     /// <returns>An IByteSource.</returns>
     public static IByteSource FromStreamFactory(
-        Func<Stream> streamFactory)
+        Func<Stream> streamFactory,
+        int bufferSize = DefaultBufferSize)
     {
-        return new ByteSource(Observable.Using(streamFactory, stream => stream.ToObservable()));
+        return new ByteSource(Observable.Using(streamFactory, stream => stream.ToObservable(bufferSize)));
+    }
+
+    /// <summary>
+    /// Creates a ByteSource from a Stream instance.
+    /// </summary>
+    /// <param name="stream">An existing Stream instance.</param>
+    /// <param name="leaveOpen">Whether to leave the stream open after completion.</param>
+    /// <param name="bufferSize">Size of each emitted chunk.</param>
+    /// <returns>An IByteSource.</returns>
+    public static IByteSource FromStream(
+        Stream stream,
+        bool leaveOpen = false,
+        int bufferSize = DefaultBufferSize)
+    {
+        if (stream == null)
+        {
+            throw new ArgumentNullException(nameof(stream));
+        }
+
+        var streamObservable = Observable.Using(
+            () => Disposable.Create(() =>
+            {
+                if (!leaveOpen)
+                {
+                    stream.Dispose();
+                }
+            }),
+            _ => stream.ToObservable(bufferSize));
+
+        return new ByteSource(streamObservable);
     }
 
     /// <summary>
@@ -82,7 +117,7 @@ public static IByteSource FromBytes(byte[] bytes, int bufferSize = 1_048_576)
     public static IByteSource FromString(
         string str,
         Encoding? encoding,
-int bufferSize = 1_048_576)
+        int bufferSize = DefaultBufferSize)
     {
         encoding ??= Encoding.UTF8;
 
@@ -102,9 +137,10 @@ int bufferSize = 1_048_576)
     /// <param name="streamFactory">A factory method that returns a Task of a Stream to read from.</param>
     /// <returns>An IByteSource.</returns>
     public static IByteSource FromAsyncStreamFactory(
-        Func<Task<Stream>> streamFactory)
+        Func<Task<Stream>> streamFactory,
+        int bufferSize = DefaultBufferSize)
     {
-        return new ByteSource(ObservableFactory.UsingAsync(streamFactory, stream => stream.ToObservable()));
+        return new ByteSource(ObservableFactory.UsingAsync(streamFactory, stream => stream.ToObservable(bufferSize)));
     }
 
     /// <summary>

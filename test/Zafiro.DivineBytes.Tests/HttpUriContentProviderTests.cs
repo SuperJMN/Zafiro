@@ -20,7 +20,7 @@ public class HttpUriContentProviderTests
         var result = await provider.GetByteSourceAsync(uri);
 
         Assert.True(result.IsSuccess);
-        Assert.Equal(0, handler.StreamRequestCount);
+        Assert.Equal(1, handler.StreamRequestCount);
         var collected = await result.Value.Bytes.SelectMany(chunk => chunk).ToArray().ToTask();
         Assert.Equal(payload, collected);
         Assert.Equal(1, handler.SendCount);
@@ -36,8 +36,8 @@ public class HttpUriContentProviderTests
 
         var result = await provider.GetByteSourceAsync(new Uri("http://example.com"));
 
-        Assert.True(result.IsSuccess);
-        await Assert.ThrowsAsync<HttpRequestException>(() => result.Value.Bytes.ToList().ToTask());
+        Assert.True(result.IsFailure);
+        Assert.Equal("Network error downloading from http://example.com/: boom", result.Error);
     }
 
     [Fact]
@@ -48,12 +48,12 @@ public class HttpUriContentProviderTests
         var provider = new HttpUriContentProvider(client);
         using var cts = new CancellationTokenSource();
 
-        var result = await provider.GetByteSourceAsync(new Uri("http://example.com/cancel"), cts.Token);
-
         cts.Cancel();
 
-        Assert.True(result.IsSuccess);
-        await Assert.ThrowsAsync<TaskCanceledException>(() => result.Value.Bytes.ToList().ToTask(cts.Token));
+        var result = await provider.GetByteSourceAsync(new Uri("http://example.com/cancel"), cts.Token);
+
+        Assert.True(result.IsFailure);
+        Assert.Equal("Download cancelled for http://example.com/cancel", result.Error);
     }
 
     private class RecordingHandler : HttpMessageHandler

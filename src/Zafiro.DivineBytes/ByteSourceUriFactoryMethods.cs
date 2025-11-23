@@ -1,3 +1,4 @@
+using System.Net.Http;
 using CSharpFunctionalExtensions;
 
 namespace Zafiro.DivineBytes;
@@ -72,7 +73,7 @@ public static class ByteSourceUriFactoryMethods
                 var httpClient = new HttpClient();
                 try
                 {
-                    var response = await httpClient.GetAsync(uri, cancellationToken);
+                    var response = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
                     response.EnsureSuccessStatusCode();
 
                     // Create a wrapper that disposes both the HttpClient and the HttpResponseMessage

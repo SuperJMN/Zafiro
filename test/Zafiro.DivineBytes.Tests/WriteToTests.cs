@@ -23,7 +23,7 @@ public class WriteToTests
         var result = await source.WriteTo(ms);
 
         // Assert
-Assert.True(result.IsSuccess);
+        Assert.True(result.IsSuccess);
         ms.Position = 0;
         var written = await ms.ReadBytesToEnd();
         Assert.Equal(data, written);
@@ -43,7 +43,7 @@ Assert.True(result.IsSuccess);
             var result = await source.WriteTo(tmp);
 
             // Assert
-Assert.True(result.IsSuccess);
+            Assert.True(result.IsSuccess);
             var bytes = await File.ReadAllBytesAsync(tmp);
             var roundtrip = Encoding.UTF8.GetString(bytes);
             Assert.Equal(text, roundtrip);
@@ -67,7 +67,7 @@ Assert.True(result.IsSuccess);
         var combined = results.Combine();
 
         // Assert
-Assert.True(combined.IsSuccess);
+        Assert.True(combined.IsSuccess);
         ms.Position = 0;
         var written = await ms.ReadBytesToEnd();
         Assert.Equal(data, written);
@@ -85,7 +85,7 @@ Assert.True(combined.IsSuccess);
         var result = await source.WriteTo(ms);
 
         // Assert
-Assert.True(result.IsSuccess);
+        Assert.True(result.IsSuccess);
         Assert.Equal(0, ms.Length);
     }
 }

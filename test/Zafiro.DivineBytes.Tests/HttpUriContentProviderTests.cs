@@ -20,11 +20,40 @@ public class HttpUriContentProviderTests
         var result = await provider.GetByteSourceAsync(uri);
 
         Assert.True(result.IsSuccess);
-        Assert.Equal(0, handler.StreamRequestCount);
+        Assert.Equal(1, handler.StreamRequestCount);
         var collected = await result.Value.Bytes.SelectMany(chunk => chunk).ToArray().ToTask();
         Assert.Equal(payload, collected);
         Assert.Equal(1, handler.SendCount);
         Assert.Equal(1, handler.StreamRequestCount);
+    }
+
+    [Fact]
+    public async Task Returns_failure_message_on_network_error()
+    {
+        var handler = new ThrowingHandler(new HttpRequestException("boom"));
+        using var client = new HttpClient(handler);
+        var provider = new HttpUriContentProvider(client);
+
+        var result = await provider.GetByteSourceAsync(new Uri("http://example.com"));
+
+        Assert.True(result.IsFailure);
+        Assert.Equal("Network error downloading from http://example.com/: boom", result.Error);
+    }
+
+    [Fact]
+    public async Task Cancels_download_when_token_cancelled()
+    {
+        var handler = new DelayedHandler();
+        using var client = new HttpClient(handler);
+        var provider = new HttpUriContentProvider(client);
+        using var cts = new CancellationTokenSource();
+
+        cts.Cancel();
+
+        var result = await provider.GetByteSourceAsync(new Uri("http://example.com/cancel"), cts.Token);
+
+        Assert.True(result.IsFailure);
+        Assert.Equal("Download cancelled for http://example.com/cancel", result.Error);
     }
 
     private class RecordingHandler : HttpMessageHandler
@@ -81,6 +110,33 @@ public class HttpUriContentProviderTests
                 onStreamRequested();
                 return Task.FromResult<Stream>(new MemoryStream(payload, writable: false));
             }
+        }
+    }
+
+    private class ThrowingHandler : HttpMessageHandler
+    {
+        private readonly Exception exception;
+
+        public ThrowingHandler(Exception exception)
+        {
+            this.exception = exception;
+        }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            throw exception;
+        }
+    }
+
+    private class DelayedHandler : HttpMessageHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(Encoding.UTF8.GetBytes("canceled")),
+            };
         }
     }
 }

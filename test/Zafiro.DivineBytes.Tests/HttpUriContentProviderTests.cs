@@ -27,6 +27,35 @@ public class HttpUriContentProviderTests
         Assert.Equal(1, handler.StreamRequestCount);
     }
 
+    [Fact]
+    public async Task Returns_failure_message_on_network_error()
+    {
+        var handler = new ThrowingHandler(new HttpRequestException("boom"));
+        using var client = new HttpClient(handler);
+        var provider = new HttpUriContentProvider(client);
+
+        var result = await provider.GetByteSourceAsync(new Uri("http://example.com"));
+
+        Assert.True(result.IsSuccess);
+        await Assert.ThrowsAsync<HttpRequestException>(() => result.Value.Bytes.ToList().ToTask());
+    }
+
+    [Fact]
+    public async Task Cancels_download_when_token_cancelled()
+    {
+        var handler = new DelayedHandler();
+        using var client = new HttpClient(handler);
+        var provider = new HttpUriContentProvider(client);
+        using var cts = new CancellationTokenSource();
+
+        var result = await provider.GetByteSourceAsync(new Uri("http://example.com/cancel"), cts.Token);
+
+        cts.Cancel();
+
+        Assert.True(result.IsSuccess);
+        await Assert.ThrowsAsync<TaskCanceledException>(() => result.Value.Bytes.ToList().ToTask(cts.Token));
+    }
+
     private class RecordingHandler : HttpMessageHandler
     {
         private readonly byte[] payload;
@@ -81,6 +110,33 @@ public class HttpUriContentProviderTests
                 onStreamRequested();
                 return Task.FromResult<Stream>(new MemoryStream(payload, writable: false));
             }
+        }
+    }
+
+    private class ThrowingHandler : HttpMessageHandler
+    {
+        private readonly Exception exception;
+
+        public ThrowingHandler(Exception exception)
+        {
+            this.exception = exception;
+        }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            throw exception;
+        }
+    }
+
+    private class DelayedHandler : HttpMessageHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(Encoding.UTF8.GetBytes("canceled")),
+            };
         }
     }
 }

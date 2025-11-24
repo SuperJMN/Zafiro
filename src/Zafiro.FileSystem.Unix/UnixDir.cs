@@ -1,9 +1,9 @@
 ﻿using Zafiro.FileSystem.Core;
-using Zafiro.FileSystem.Readonly;
+using Zafiro.DivineBytes;
 
 namespace Zafiro.FileSystem.Unix;
 
-public class UnixDir : UnixNode, IDirectory
+public class UnixDir : UnixNode, INamedContainer
 {
     public UnixFileProperties Properties { get; }
 
@@ -21,7 +21,8 @@ public class UnixDir : UnixNode, IDirectory
 
     public IEnumerable<UnixNode> Nodes { get; }
 
-    public IEnumerable<INode> Children => Nodes;
+    public IEnumerable<INamedContainer> Subcontainers => Nodes.OfType<INamedContainer>();
+    public IEnumerable<INamedByteSource> Resources => Nodes.OfType<INamedByteSource>();
 
     public override string ToString() => "/" + Name;
 }

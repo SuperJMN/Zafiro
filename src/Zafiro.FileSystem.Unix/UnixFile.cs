@@ -1,11 +1,10 @@
 ﻿using Zafiro.DivineBytes;
-using Zafiro.FileSystem.Readonly;
 
 namespace Zafiro.FileSystem.Unix;
 
-public class UnixFile : UnixNode, IFile
+public class UnixFile : UnixNode, INamedByteSource
 {
-    public UnixFile(IFile file, UnixFileProperties properties) : this(file.Name, file, file.Length, properties)
+    public UnixFile(INamedByteSource file, UnixFileProperties properties) : this(file.Name, file, -1, properties)
     {
     }
 

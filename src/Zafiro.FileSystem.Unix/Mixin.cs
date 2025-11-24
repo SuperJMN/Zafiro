@@ -1,12 +1,12 @@
 using Zafiro.FileSystem.Core;
-using Zafiro.FileSystem.Readonly;
+using Zafiro.DivineBytes;
 using Zafiro.Mixins;
 
 namespace Zafiro.FileSystem.Unix;
 
 public static class Mixin
 {
-    public static TDir ToRoot<TDir>(this ICollection<IRootedFile> allFiles, ZafiroPath parent, Func<string, IEnumerable<INode>, TDir> createDir) where TDir : IDirectory
+    public static TDir ToRoot<TDir>(this ICollection<IRootedFile> allFiles, ZafiroPath parent, Func<string, IEnumerable<INode>, TDir> createDir) where TDir : INamedContainer
     {
         var files = allFiles.Where(x => x.Path == parent).Select(x => (INode)x.Value);
         var allParents = allFiles.Select(x => x.Path.ParentsAndSelf()).Flatten();

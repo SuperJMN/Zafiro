@@ -2,9 +2,7 @@
 using Zafiro.DivineBytes;
 using Zafiro.CSharpFunctionalExtensions;
 using Zafiro.FileSystem.Mutable;
-using Zafiro.FileSystem.Readonly;
 using Zafiro.Reactive;
-using Directory = Zafiro.FileSystem.Readonly.Directory;
 
 namespace Zafiro.FileSystem.Core;
 
@@ -15,7 +13,7 @@ public static class Mixin
         return rootedFile.Path.Combine(rootedFile.Value.Name);
     }
 
-    public static Task<Result<IDirectory>> ToDirectory(this IMutableDirectory directory)
+    public static Task<Result<INamedContainer>> ToDirectory(this IMutableDirectory directory)
     {
         var files = directory
             .Files()
@@ -29,10 +27,10 @@ public static class Mixin
 
         return from file in files
                from subdir in subDirs
-               select (IDirectory)new Directory(directory.Name, file.Concat(subdir.Cast<INode>()));
+               select (INamedContainer)new NamedContainer(directory.Name, file, subdir);
     }
 
-    public static Stream ToStream(this IFile file)
+    public static Stream ToStream(this IByteSource file)
     {
         return file.Bytes.ToStream();
     }

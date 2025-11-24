@@ -1,17 +1,17 @@
 using DynamicData;
-using Zafiro.FileSystem.Readonly;
+using Zafiro.DivineBytes;
 
 namespace Zafiro.FileSystem.Dynamic;
 
 public static class DynamicMixin
 {
-    public static IObservable<IChangeSet<IFile, string>> AllFiles(this IDynamicDirectory directory)
+    public static IObservable<IChangeSet<INamedByteSource, string>> AllFiles(this IDynamicDirectory directory)
     {
-        return directory.Files.MergeChangeSets(directory.AllDirectories().MergeManyChangeSets(x => x.AllFiles()));
+        return new[] { directory.Files, directory.AllDirectories().MergeManyChangeSets(x => x.AllFiles()) }.MergeChangeSets();
     }
 
     public static IObservable<IChangeSet<IDynamicDirectory, string>> AllDirectories(this IDynamicDirectory directory)
     {
-        return directory.Directories.MergeChangeSets(directory.Directories.MergeManyChangeSets(x => x.AllDirectories()));
+        return new[] { directory.Directories, directory.Directories.MergeManyChangeSets(x => x.AllDirectories()) }.MergeChangeSets();
     }
 }

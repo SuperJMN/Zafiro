@@ -1,5 +1,5 @@
-﻿using Zafiro.FileSystem.Readonly;
+﻿using Zafiro.DivineBytes;
 
 namespace Zafiro.FileSystem.Core;
 
-public interface IRootedFile : IFile, IRooted<IFile>;
+public interface IRootedFile : INamedByteSource, IRooted<INamedByteSource>;

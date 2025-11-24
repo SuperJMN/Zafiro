@@ -2,8 +2,6 @@ using CSharpFunctionalExtensions;
 using DynamicData;
 using Zafiro.DivineBytes;
 using Zafiro.FileSystem.Core;
-using Zafiro.FileSystem.Readonly;
-using File = Zafiro.FileSystem.Readonly.File;
 
 namespace Zafiro.FileSystem.Mutable;
 
@@ -29,9 +27,9 @@ public static class MutableMixin
         return directory.GetChildren().Map(nodes => nodes.OfType<IMutableDirectory>());
     }
 
-    public static Task<Result<IFile>> AsReadOnly(this IMutableFile file)
+    public static Task<Result<INamedByteSource>> AsReadOnly(this IMutableFile file)
     {
-        return file.GetContents().Map(data => (IFile)new File(file.Name, data, -1));
+        return file.GetContents().Map(data => (INamedByteSource)new NamedByteSource(file.Name, data));
     }
 
     public static Task<Result> CreateFileWithContents(this IMutableDirectory directory, string name, IByteSource data)
@@ -40,7 +38,7 @@ public static class MutableMixin
             .Bind(f => f.SetContents(data));
     }
 
-    public static Task<Result> CreateFileWithContents(this IMutableDirectory directory, IFile file)
+    public static Task<Result> CreateFileWithContents(this IMutableDirectory directory, INamedByteSource file)
     {
         return directory.CreateFile(file.Name)
             .Bind(f => f.SetContents(file));

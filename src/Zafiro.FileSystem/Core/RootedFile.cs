@@ -22,4 +22,9 @@ public class RootedFile : IRootedFile
     {
         return this.FullPath();
     }
+
+    public IDisposable Subscribe(IObserver<byte[]> observer)
+    {
+        return File.Subscribe(observer);
+    }
 }

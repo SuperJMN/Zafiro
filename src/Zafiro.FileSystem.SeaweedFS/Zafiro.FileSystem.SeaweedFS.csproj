@@ -13,5 +13,6 @@
     <ItemGroup>
       <ProjectReference Include="..\Zafiro.FilesSystem.SeaweedFS.Filer.Client\Zafiro.FileSystem.SeaweedFS.Filer.Client.csproj" />
       <ProjectReference Include="..\Zafiro.FileSystem\Zafiro.FileSystem.csproj" />
+      <ProjectReference Include="..\Zafiro.DivineBytes\Zafiro.DivineBytes.csproj" />
     </ItemGroup>
 </Project>

@@ -7,5 +7,6 @@
     <Import Project="..\Common.props" />
     <ItemGroup>
         <ProjectReference Include="..\Zafiro.FileSystem\Zafiro.FileSystem.csproj" />
+        <ProjectReference Include="..\Zafiro.DivineBytes\Zafiro.DivineBytes.csproj" />
     </ItemGroup>
 </Project>

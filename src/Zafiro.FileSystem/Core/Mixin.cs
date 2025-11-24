@@ -1,4 +1,5 @@
 ﻿using CSharpFunctionalExtensions;
+using Zafiro.DivineBytes;
 using Zafiro.CSharpFunctionalExtensions;
 using Zafiro.FileSystem.Mutable;
 using Zafiro.FileSystem.Readonly;

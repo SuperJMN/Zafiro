@@ -1,6 +1,7 @@
 ﻿using System.Reactive.Concurrency;
 using CSharpFunctionalExtensions;
-using Zafiro.DataModel;
+using Zafiro.CSharpFunctionalExtensions;
+using Zafiro.DivineBytes;
 using Zafiro.FileSystem.Core;
 using Zafiro.FileSystem.Mutable;
 using Zafiro.FileSystem.SeaweedFS.Filer.Client;
@@ -16,19 +17,19 @@ public class File(ZafiroPath path, ISeaweedFS seaweedFS) : IMutableFile
     public string Name => Path.Name();
     public bool IsHidden => false;
 
-    public Task<Result> SetContents(IData data, IScheduler? scheduler = null, CancellationToken cancellationToken = default)
+    public Task<Result> SetContents(IByteSource data, IScheduler? scheduler = null, CancellationToken cancellationToken = default)
     {
         return SeaweedFS.Upload(Path, data.Bytes.ToStream(), cancellationToken);
     }
 
-    public Task<Result<IData>> GetContents()
+    public Task<Result<IByteSource>> GetContents()
     {
         return SeaweedFS.GetFileMetadata(Path).Bind(GetData);
     }
 
-    private Result<IData> GetData(FileMetadata metadata)
+    private Result<IByteSource> GetData(FileMetadata metadata)
     {
-        return Data.FromStream(() => SeaweedFS.GetFileContents(Path), metadata.FileSize);
+        return Result.Success(ByteSource.FromAsyncStreamFactory(async () => (await SeaweedFS.GetFileContents(Path)).Value));
     }
 
     public override string ToString()

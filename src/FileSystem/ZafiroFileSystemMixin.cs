@@ -10,7 +10,7 @@ public static class ZafiroFileSystemMixin
             .SelectMany(r => r.Files);
     }
 
-    public static ZafiroPath MakeRelativeTo(this ZafiroPath path, ZafiroPath relativeTo)
+    public static Path MakeRelativeTo(this Path path, Path relativeTo)
     {
         var relativePathChunks =
             relativeTo.RouteFragments
@@ -21,13 +21,13 @@ public static class ZafiroFileSystemMixin
                 .SelectMany(x => x)
                 .Where(x => x is not default(string));
 
-        return new ZafiroPath(relativePathChunks);
+        return new Path(relativePathChunks);
     }
 
 
-    public static ZafiroPath Combine(this ZafiroPath self, ZafiroPath path)
+    public static Path Combine(this Path self, Path path)
     {
-        return new ZafiroPath(self.RouteFragments.Concat(path.RouteFragments));
+        return new Path(self.RouteFragments.Concat(path.RouteFragments));
     }
 
     public static async Task<byte[]> ReadAllBytes(this IZafiroFile file)

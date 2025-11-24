@@ -13,7 +13,6 @@
         <PackageReference Include="ReactiveUI" />
         <PackageReference Include="Serilog" />
         <PackageReference Include="System.IO.Abstractions" />
-        <PackageReference Include="System.Reactive" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\Zafiro\Zafiro.csproj" />

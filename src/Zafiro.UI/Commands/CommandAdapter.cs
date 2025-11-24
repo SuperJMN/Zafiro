@@ -1,4 +1,3 @@
-using System.Reactive.Linq;
 using System.Windows.Input;
 
 namespace Zafiro.UI.Commands;

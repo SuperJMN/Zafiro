@@ -19,19 +19,19 @@ public class SmartZafiroFileSystem : IZafiroFileSystem
     public Host Host { get; }
     public Maybe<ILogger> Logger => inner.Logger;
 
-    public Result<IZafiroFile> GetFile(ZafiroPath path)
+    public Result<IZafiroFile> GetFile(Path path)
     {
         return inner.GetFile(path)
             .Map(file => (IZafiroFile) new SmartZafiroFile(file, this));
     }
 
-    public Result<IZafiroDirectory> GetDirectory(ZafiroPath path)
+    public Result<IZafiroDirectory> GetDirectory(Path path)
     {
         return inner.GetDirectory(path)
             .Map(dir => (IZafiroDirectory) new SmartZafiroDirectory(dir, this));
     }
 
-    public void RemoveHash(ZafiroPath getHash)
+    public void RemoveHash(Path getHash)
     {
         hashSet.RemoveWhere(d => d.Source.Equals(getHash));
     }

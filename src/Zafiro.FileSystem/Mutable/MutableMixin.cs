@@ -44,14 +44,14 @@ public static class MutableMixin
             .Bind(f => f.SetContents(file));
     }
 
-    public static Task<Result<IMutableFile>> GetFile(this IMutableDirectory directory, ZafiroPath path)
+    public static Task<Result<IMutableFile>> GetFile(this IMutableDirectory directory, Path path)
     {
         return directory.Files()
             .Bind(files => files.TryFirst(file => file.Name == path.Name())
                 .ToResult($"Can't find the file {path.Name()}"));
     }
 
-    public static Task<Result<IMutableFile>> GetFile(this IMutableFileSystem fileSystem, ZafiroPath path)
+    public static Task<Result<IMutableFile>> GetFile(this IMutableFileSystem fileSystem, Path path)
     {
         return path.Parent()
             .ToResult($"Cannot get the directory of path '{path}")
@@ -79,6 +79,6 @@ public static class MutableMisc
 
     public static string GetDirKey(string name)
     {
-        return name + ZafiroPath.ChunkSeparator;
+        return name + Path.ChunkSeparator;
     }
 }

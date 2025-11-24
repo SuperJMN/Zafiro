@@ -1,6 +1,4 @@
-﻿using CSharpFunctionalExtensions;
-
-namespace Zafiro.UI;
+﻿namespace Zafiro.UI;
 
 public interface INotificationService
 {

@@ -12,7 +12,7 @@ public class FileSystem : IMutableFileSystem
 
     public IFileSystem Inner { get; }
 
-    public Task<Result<IMutableDirectory>> GetDirectory(ZafiroPath path)
+    public Task<Result<IMutableDirectory>> GetDirectory(Path path)
     {
         if (OperatingSystem.IsLinux())
         {
@@ -25,7 +25,7 @@ public class FileSystem : IMutableFileSystem
 
         if (OperatingSystem.IsWindows())
         {
-            if (path == ZafiroPath.Empty)
+            if (path == Path.Empty)
             {
                 var mutableDirectory = (IMutableDirectory)new WindowsRoot(Inner);
                 return Task.FromResult(Result.Success(mutableDirectory));
@@ -39,13 +39,13 @@ public class FileSystem : IMutableFileSystem
         throw new NotSupportedException("Only supported OSes are Windows and Linux for now");
     }
 
-    public async Task<Result<IMutableDirectory>> GetTemporaryDirectory(ZafiroPath path)
+    public async Task<Result<IMutableDirectory>> GetTemporaryDirectory(Path path)
     {
         return Result.Try(() => Inner.Directory.CreateTempSubdirectory())
             .Map(info => (IMutableDirectory)new Directory(info));
     }
 
-    public ZafiroPath InitialPath
+    public Path InitialPath
     {
         get
         {
@@ -54,7 +54,7 @@ public class FileSystem : IMutableFileSystem
         }
     }
 
-    public Task<Result<IMutableFile>> GetFile(ZafiroPath path)
+    public Task<Result<IMutableFile>> GetFile(Path path)
     {
         if (OperatingSystem.IsLinux())
         {
@@ -75,7 +75,7 @@ public class FileSystem : IMutableFileSystem
         return Task.FromResult(Result.Failure<IMutableFile>("Not implemented"));
     }
 
-    private ZafiroPath FromWindows(string folderPath)
+    private Path FromWindows(string folderPath)
     {
         return folderPath.Replace("\\", "/");
     }

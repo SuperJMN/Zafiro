@@ -1,20 +1,17 @@
-﻿using CSharpFunctionalExtensions;
-using Zafiro.FileSystem.Core;
-using Zafiro.FileSystem.Mutable;
-using Zafiro.FileSystem.SeaweedFS.Filer.Client;
+﻿using Zafiro.DivineBytes;
 using ClientDirectory = Zafiro.FileSystem.SeaweedFS.Filer.Client.Directory;
 
 namespace Zafiro.FileSystem.SeaweedFS;
 
 public class Directory : DirectoryBase
 {
-    private Directory(ZafiroPath path, ISeaweedFS seaweedFS)
+    private Directory(Path path, ISeaweedFS seaweedFS)
     {
         SeaweedFS = seaweedFS;
         Path = path;
     }
 
-    public ZafiroPath Path { get; }
+    public Path Path { get; }
     public ISeaweedFS SeaweedFS { get; }
     public override string Name => Path.Name();
 

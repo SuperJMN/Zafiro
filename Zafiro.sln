@@ -1,4 +1,4 @@
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -13,8 +13,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Zafiro.FileSystem.Local", "src\Zafiro.FileSystem.Local\Zafiro.FileSystem.Local.csproj", "{8F9EF36E-6256-406F-B222-E9780CCA2040}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Zafiro.FileSystem.SeaweedFS", "src\Zafiro.FileSystem.SeaweedFS\Zafiro.FileSystem.SeaweedFS.csproj", "{80273842-A7EE-48D8-9D4D-07CA044019A4}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Zafiro.FileSystem.Unix", "src\Zafiro.FileSystem.Unix\Zafiro.FileSystem.Unix.csproj", "{80685587-E6E1-408E-94D6-9B9B89E92B4B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Zafiro.UI", "src\Zafiro.UI\Zafiro.UI.csproj", "{602E5694-7079-4250-BE82-1D9793D42BD9}"
 EndProject
@@ -231,36 +229,6 @@ Global
 		{80273842-A7EE-48D8-9D4D-07CA044019A4}.Release|x64.Build.0 = Release|Any CPU
 		{80273842-A7EE-48D8-9D4D-07CA044019A4}.Release|x86.ActiveCfg = Release|Any CPU
 		{80273842-A7EE-48D8-9D4D-07CA044019A4}.Release|x86.Build.0 = Release|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Analysis|Any CPU.ActiveCfg = Debug|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Analysis|Any CPU.Build.0 = Debug|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Analysis|ARM.ActiveCfg = Debug|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Analysis|ARM.Build.0 = Debug|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Analysis|ARM64.ActiveCfg = Debug|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Analysis|ARM64.Build.0 = Debug|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Analysis|x64.ActiveCfg = Debug|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Analysis|x64.Build.0 = Debug|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Analysis|x86.ActiveCfg = Debug|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Analysis|x86.Build.0 = Debug|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Debug|ARM.Build.0 = Debug|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Debug|ARM64.ActiveCfg = Debug|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Debug|ARM64.Build.0 = Debug|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Debug|x64.Build.0 = Debug|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Debug|x86.Build.0 = Debug|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Release|ARM.ActiveCfg = Release|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Release|ARM.Build.0 = Release|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Release|ARM64.ActiveCfg = Release|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Release|ARM64.Build.0 = Release|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Release|x64.ActiveCfg = Release|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Release|x64.Build.0 = Release|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Release|x86.ActiveCfg = Release|Any CPU
-		{80685587-E6E1-408E-94D6-9B9B89E92B4B}.Release|x86.Build.0 = Release|Any CPU
 		{602E5694-7079-4250-BE82-1D9793D42BD9}.Analysis|Any CPU.ActiveCfg = Debug|Any CPU
 		{602E5694-7079-4250-BE82-1D9793D42BD9}.Analysis|Any CPU.Build.0 = Debug|Any CPU
 		{602E5694-7079-4250-BE82-1D9793D42BD9}.Analysis|ARM.ActiveCfg = Debug|Any CPU

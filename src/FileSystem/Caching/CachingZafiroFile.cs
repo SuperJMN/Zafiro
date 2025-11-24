@@ -16,7 +16,7 @@ public class CachingZafiroFile : IZafiroFile
         this.fileSystem = fileSystem;
     }
 
-    public ZafiroPath Path => inner.Path;
+    public Path Path => inner.Path;
     public string Name => inner.Name;
 
     public Task<Result> CopyTo(IZafiroFile destination)

@@ -1,17 +1,13 @@
 ﻿using System.Reactive.Concurrency;
-using CSharpFunctionalExtensions;
 using Zafiro.CSharpFunctionalExtensions;
 using Zafiro.DivineBytes;
-using Zafiro.FileSystem.Core;
-using Zafiro.FileSystem.Mutable;
-using Zafiro.FileSystem.SeaweedFS.Filer.Client;
 using Zafiro.Reactive;
 
 namespace Zafiro.FileSystem.SeaweedFS;
 
-public class File(ZafiroPath path, ISeaweedFS seaweedFS) : IMutableFile
+public class File(Path path, ISeaweedFS seaweedFS) : IMutableFile
 {
-    public ZafiroPath Path { get; } = path;
+    public Path Path { get; } = path;
     public ISeaweedFS SeaweedFS { get; } = seaweedFS;
 
     public string Name => Path.Name();

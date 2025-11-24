@@ -6,7 +6,7 @@ public interface IZafiroFile
 {
     IObservable<byte> Contents { get; }
     Task<Result<bool>> Exists { get; }
-    ZafiroPath Path { get; }
+    Path Path { get; }
     Task<Result<FileProperties>> Properties { get; }
     Task<Result<IDictionary<HashMethod, byte[]>>> Hashes { get; }
     IFileSystemRoot FileSystem { get; }

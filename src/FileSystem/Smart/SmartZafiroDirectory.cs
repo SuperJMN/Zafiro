@@ -17,7 +17,7 @@ public class SmartZafiroDirectory : IZafiroDirectory
 
     public IEnumerable<IZafiroDirectory> Directories => inner.Directories.Select(d => new SmartZafiroDirectory(d, filesystem));
 
-    public ZafiroPath Path => inner.Path;
+    public Path Path => inner.Path;
 
     public IZafiroFileSystem FileSystem => filesystem;
 

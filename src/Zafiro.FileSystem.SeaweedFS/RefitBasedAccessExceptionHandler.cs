@@ -1,14 +1,12 @@
 ﻿using System.Net;
-using CSharpFunctionalExtensions;
 using Refit;
 using Serilog;
-using Zafiro.FileSystem.Core;
 
 namespace Zafiro.FileSystem.SeaweedFS;
 
 internal static class RefitBasedAccessExceptionHandler
 {
-    public static string HandlePathAccessError(ZafiroPath path, Exception exception, Maybe<ILogger> logger)
+    public static string HandlePathAccessError(Path path, Exception exception, Maybe<ILogger> logger)
     {
         if (exception is ApiException { StatusCode: HttpStatusCode.NotFound })
         {

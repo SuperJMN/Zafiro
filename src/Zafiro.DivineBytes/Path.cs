@@ -53,7 +53,7 @@ public sealed class Path : ValueObject
     {
         if (path.Trim() == "")
         {
-            return Result.Failure<Path>("Use ZafiroPath.Empty to create an empty path (usually root)");
+            return Result.Failure<Path>("Use Path.Empty to create an empty path (usually root)");
         }
 
         if (GetChunks(path).Any(string.IsNullOrEmpty))

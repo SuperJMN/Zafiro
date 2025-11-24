@@ -1,18 +1,19 @@
 ﻿using System.Reactive.Linq;
 using CSharpFunctionalExtensions;
+using Zafiro.DivineBytes;
 
 namespace Zafiro.FileSystem.Core;
 
 public class ZafiroDirectory : IZafiroDirectory
 {
-    public ZafiroDirectory(ZafiroPath path, IFileSystemRoot fileSystemRoot)
+    public ZafiroDirectory(Path path, IFileSystemRoot fileSystemRoot)
     {
         Path = path;
         FileSystem = fileSystemRoot;
         Changed = fileSystemRoot.Changed.Where(change => change.Path.Parent() == Path);
     }
 
-    public ZafiroPath Path { get; }
+    public Path Path { get; }
     public IFileSystemRoot FileSystem { get; }
     public Task<Result<DirectoryProperties>> Properties => FileSystem.GetDirectoryProperties(Path);
 

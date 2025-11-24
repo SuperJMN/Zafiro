@@ -8,9 +8,9 @@ namespace Zafiro.FileSystem.Core;
 
 public static class Mixin
 {
-    public static ZafiroPath FullPath<T>(this IRooted<T> rootedFile) where T : INamed
+    public static Path FullPath(this INamedWithPath item)
     {
-        return rootedFile.Path.Combine(rootedFile.Value.Name);
+        return item.Path.Combine(item.Name);
     }
 
     public static Task<Result<INamedContainer>> ToDirectory(this IMutableDirectory directory)

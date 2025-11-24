@@ -1,7 +1,4 @@
-﻿using System.Reactive.Linq;
-using CSharpFunctionalExtensions;
-using JetBrains.Annotations;
-using Zafiro.CSharpFunctionalExtensions;
+﻿using JetBrains.Annotations;
 
 namespace Zafiro.UI;
 

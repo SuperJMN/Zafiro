@@ -13,7 +13,7 @@ public class ZafiroFile : IZafiroFile
         FileSystem = zafiroFileSystem;
     }
 
-    public ZafiroPath Path => new(fileInfo.FullName.Split(fileInfo.FileSystem.Path.DirectorySeparatorChar));
+    public Path Path => new(fileInfo.FullName.Split(fileInfo.FileSystem.Path.DirectorySeparatorChar));
     public string Name => fileInfo.Name;
 
     public async Task<Result> CopyTo(IZafiroFile destination)

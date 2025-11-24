@@ -1,4 +1,3 @@
-using System.Reactive.Linq;
 using System.Reflection;
 using Zafiro.UI.Navigation;
 using Zafiro.UI.Shell.Utils;

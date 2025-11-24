@@ -1,7 +1,5 @@
-﻿using System.Reactive.Linq;
-using System.Reactive.Subjects;
+﻿using System.Reactive.Subjects;
 using System.Windows.Input;
-using CSharpFunctionalExtensions;
 
 namespace Zafiro.UI.Commands;
 

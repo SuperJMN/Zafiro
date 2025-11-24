@@ -1,13 +1,14 @@
-﻿using Zafiro.FileSystem.Core;
+﻿using Zafiro.DivineBytes;
+using Zafiro.FileSystem.Core;
 
 namespace Zafiro.FileSystem.Comparer;
 
 public record RightOnlyDiff : FileDiff
 {
-    public RightOnlyDiff(IRootedFile right)
+    public RightOnlyDiff(INamedByteSourceWithPath right)
     {
         Right = right;
     }
 
-    public IRootedFile Right { get; }
+    public INamedByteSourceWithPath Right { get; }
 }

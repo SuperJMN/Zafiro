@@ -1,8 +1,3 @@
-using CSharpFunctionalExtensions;
-using Zafiro.FileSystem.Core;
-using Zafiro.FileSystem.Mutable;
-using Zafiro.FileSystem.SeaweedFS.Filer.Client;
-
 namespace Zafiro.FileSystem.SeaweedFS;
 
 public class FileSystem : IMutableFileSystem
@@ -14,15 +9,15 @@ public class FileSystem : IMutableFileSystem
 
     public ISeaweedFS SeaweedFS { get; }
 
-    public Task<Result<IMutableDirectory>> GetDirectory(ZafiroPath path)
+    public Task<Result<IMutableDirectory>> GetDirectory(Path path)
     {
         return Directory.From(path, SeaweedFS).Map(IMutableDirectory (s) => s);
     }
 
-    public Task<Result<IMutableDirectory>> GetTemporaryDirectory(ZafiroPath path)
+    public Task<Result<IMutableDirectory>> GetTemporaryDirectory(Path path)
     {
         throw new NotImplementedException();
     }
 
-    public ZafiroPath InitialPath => ZafiroPath.Empty;
+    public Path InitialPath => Path.Empty;
 }

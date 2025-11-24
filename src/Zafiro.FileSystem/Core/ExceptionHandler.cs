@@ -5,7 +5,7 @@ namespace Zafiro.FileSystem.Core;
 
 public static class ExceptionHandler
 {
-    public static string HandleError(ZafiroPath path, Exception exception, Maybe<ILogger> logger)
+    public static string HandleError(Path path, Exception exception, Maybe<ILogger> logger)
     {
         if (exception is TaskCanceledException)
         {

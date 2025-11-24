@@ -1,7 +1,6 @@
 ﻿using System.Collections.Specialized;
 using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
-using System.Reactive.Linq;
 using System.Reflection;
 using Zafiro.Mixins;
 using Zafiro.UI.ObjectEditor.TemplateMatchers;

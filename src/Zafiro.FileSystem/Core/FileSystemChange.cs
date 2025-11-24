@@ -1,3 +1,3 @@
 ﻿namespace Zafiro.FileSystem.Core;
 
-public record FileSystemChange(ZafiroPath Path, Change Change);
+public record FileSystemChange(Path Path, Change Change);

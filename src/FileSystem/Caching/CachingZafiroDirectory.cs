@@ -17,7 +17,7 @@ public class CachingZafiroDirectory : IZafiroDirectory
 
     public IEnumerable<IZafiroDirectory> Directories => inner.Directories.Select(d => new CachingZafiroDirectory(d, filesystem));
 
-    public ZafiroPath Path => inner.Path;
+    public Path Path => inner.Path;
 
     public IZafiroFileSystem FileSystem => filesystem;
 

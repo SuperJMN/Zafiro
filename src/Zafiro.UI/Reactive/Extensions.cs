@@ -1,5 +1,4 @@
 using System.Reactive.Concurrency;
-using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 
 namespace Zafiro.UI.Reactive;

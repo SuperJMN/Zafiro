@@ -15,7 +15,7 @@ public class ZafiroFileSystem : IZafiroFileSystem
         this.fileSystem = fileSystem;
     }
 
-    public Result<IZafiroFile> GetFile(ZafiroPath path)
+    public Result<IZafiroFile> GetFile(Path path)
     {
         return Result
             .Try(() => fileSystem.FileInfo.FromFileName(TransformPathToFileSystem(path)))
@@ -27,7 +27,7 @@ public class ZafiroFileSystem : IZafiroFileSystem
             .Map(r => (IZafiroFile)new ZafiroFile(r, this));
     }
 
-    public Result<IZafiroDirectory> GetDirectory(ZafiroPath path)
+    public Result<IZafiroDirectory> GetDirectory(Path path)
     {
         return Result
             .Try(() => fileSystem.DirectoryInfo.FromDirectoryName(TransformPathToFileSystem(path)))
@@ -35,7 +35,7 @@ public class ZafiroFileSystem : IZafiroFileSystem
             .Map(r => (IZafiroDirectory)new ZafiroDirectory(r, this));
     }
 
-    private string TransformPathToFileSystem(ZafiroPath path)
+    private string TransformPathToFileSystem(Path path)
     {
         return string.Join(fileSystem.Path.DirectorySeparatorChar, path.RouteFragments);
     }

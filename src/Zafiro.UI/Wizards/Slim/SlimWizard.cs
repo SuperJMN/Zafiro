@@ -1,9 +1,5 @@
 using System.Collections.Immutable;
-using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using CSharpFunctionalExtensions;
-using ReactiveUI;
-using Zafiro.CSharpFunctionalExtensions;
 using Zafiro.UI.Commands;
 
 namespace Zafiro.UI.Wizards.Slim;

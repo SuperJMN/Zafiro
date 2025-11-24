@@ -2,9 +2,9 @@
 
 namespace Zafiro.FileSystem;
 
-public static class ZafiroPathMixin
+public static class PathMixin
 {
-    public static string NameWithoutExtension(this ZafiroPath path)
+    public static string NameWithoutExtension(this Path path)
     {
         var last = path.RouteFragments.Last();
         var lastIndex = last.LastIndexOf('.');
@@ -12,7 +12,7 @@ public static class ZafiroPathMixin
         return lastIndex < 0 ? last : last[..lastIndex];
     }
 
-    public static Maybe<string> Extension(this ZafiroPath path)
+    public static Maybe<string> Extension(this Path path)
     {
         var last = path.RouteFragments.Last();
         var lastIndex = last.LastIndexOf('.');

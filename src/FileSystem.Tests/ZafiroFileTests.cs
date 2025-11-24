@@ -45,7 +45,7 @@ public class ZafiroFileTests
         dir.IsSuccess.Should().BeTrue();
         dir.Value.Files.Select(x => x.Path).Should().BeEquivalentTo(new[]
         {
-            new ZafiroPath("c:", "Subdir", "file1.txt")
+            new Path("c:", "Subdir", "file1.txt")
         });
     }
 

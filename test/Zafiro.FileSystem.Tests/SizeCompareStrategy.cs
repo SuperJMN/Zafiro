@@ -1,6 +1,4 @@
-﻿using Zafiro.FileSystem.Core;
-
-namespace Zafiro.FileSystem.Tests;
+﻿namespace Zafiro.FileSystem.Tests;
 
 public class SizeCompareStrategyTests
 {
@@ -45,7 +43,7 @@ public class SizeCompareStrategyTests
 
         public IObservable<byte> Contents { get; }
         public Task<Result<bool>> Exists { get; }
-        public ZafiroPath Path { get; }
+        public Path Path { get; }
         public Task<Result<FileProperties>> Properties { get; }
         public Task<Result<IDictionary<HashMethod, byte[]>>> Hashes { get; }
         public IFileSystemRoot FileSystem { get; }

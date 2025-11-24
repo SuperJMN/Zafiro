@@ -2,37 +2,37 @@
 
 namespace Zafiro.FileSystem;
 
-public sealed class ZafiroPath : ValueObject
+public sealed class Path : ValueObject
 {
     public const char ChuckSeparator = '/';
 
-    public ZafiroPath(string path)
+    public Path(string path)
     {
         Path = path;
     }
 
-    public ZafiroPath(params string[] routeFragments)
+    public Path(params string[] routeFragments)
     {
         Path = string.Join(ChuckSeparator, routeFragments);
     }
 
-    public ZafiroPath(IEnumerable<string> relativePathChunks) : this(relativePathChunks.ToArray())
+    public Path(IEnumerable<string> relativePathChunks) : this(relativePathChunks.ToArray())
     {
     }
 
     public IEnumerable<string> RouteFragments => Path.Split(ChuckSeparator);
 
-    public static implicit operator ZafiroPath(string[] chunks)
+    public static implicit operator Path(string[] chunks)
     {
-        return new ZafiroPath(chunks);
+        return new Path(chunks);
     }
 
-    public static implicit operator ZafiroPath(string path)
+    public static implicit operator Path(string path)
     {
-        return new ZafiroPath(path);
+        return new Path(path);
     }
 
-    public static implicit operator string(ZafiroPath path)
+    public static implicit operator string(Path path)
     {
         return path.ToString();
     }

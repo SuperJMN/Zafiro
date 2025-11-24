@@ -19,7 +19,7 @@ public class ZafiroDirectory : IZafiroDirectory
     public IEnumerable<IZafiroDirectory> Directories =>
         directoryInfo.EnumerateDirectories().Select(x => new ZafiroDirectory(x, zafiroFileSystem));
 
-    public ZafiroPath Path => new(directoryInfo.FullName.Split(directoryInfo.FileSystem.Path.DirectorySeparatorChar));
+    public Path Path => new(directoryInfo.FullName.Split(directoryInfo.FileSystem.Path.DirectorySeparatorChar));
     public IZafiroFileSystem FileSystem => zafiroFileSystem;
     public Result<IZafiroFile> GetFile(string name)
     {

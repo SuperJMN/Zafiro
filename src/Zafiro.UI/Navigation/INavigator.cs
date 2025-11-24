@@ -1,4 +1,3 @@
-using CSharpFunctionalExtensions;
 using Zafiro.UI.Commands;
 
 namespace Zafiro.UI.Navigation

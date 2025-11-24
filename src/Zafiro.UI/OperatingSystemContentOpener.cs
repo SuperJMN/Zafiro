@@ -1,6 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Reactive.Linq;
-using CSharpFunctionalExtensions;
 using Zafiro.Reactive;
 using Process = System.Diagnostics.Process;
 

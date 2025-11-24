@@ -1,5 +1,3 @@
-using CSharpFunctionalExtensions;
-
 namespace Zafiro.UI.Wizards.Classic.Builder;
 
 /// <summary>

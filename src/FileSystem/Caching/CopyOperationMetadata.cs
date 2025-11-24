@@ -5,7 +5,7 @@ namespace Zafiro.FileSystem.Caching;
 
 public class CopyOperationMetadata : ValueObject
 {
-    public CopyOperationMetadata(Host host, ZafiroPath source, ZafiroPath destination, Hash hash)
+    public CopyOperationMetadata(Host host, Path source, Path destination, Hash hash)
     {
         Host = host;
         Source = source;
@@ -14,8 +14,8 @@ public class CopyOperationMetadata : ValueObject
     }
 
     public Host Host { get; }
-    public ZafiroPath Source { get; }
-    public ZafiroPath Destination { get; }
+    public Path Source { get; }
+    public Path Destination { get; }
     public Hash Hash { get; }
 
     protected override IEnumerable<object> GetEqualityComponents()

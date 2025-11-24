@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Windows.Input;
-using CSharpFunctionalExtensions;
 
 namespace Zafiro.UI.Commands;
 

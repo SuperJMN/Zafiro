@@ -1,4 +1,3 @@
-using System.Reactive.Linq;
 using Zafiro.Reactive;
 using Zafiro.UI.Commands;
 using Zafiro.UI.Wizards.Classic.Builder;

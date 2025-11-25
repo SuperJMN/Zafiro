@@ -1,4 +1,3 @@
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using CSharpFunctionalExtensions;
@@ -9,7 +8,6 @@ public abstract class DirectoryBase : IMutableDirectory
 {
     private readonly Subject<IMutableDirectory> directoryCreated = new();
     private readonly Subject<string> directoryDeleted = new();
-    private readonly CompositeDisposable disposables = new();
     private readonly Subject<IMutableFile> fileCreated = new();
     private readonly Subject<string> fileDeleted = new();
 
@@ -49,12 +47,8 @@ public abstract class DirectoryBase : IMutableDirectory
     public abstract Task<Result<IEnumerable<IMutableNode>>> GetChildren(CancellationToken cancellationToken = default);
     public abstract Task<Result<bool>> HasFile(string name);
     public abstract Task<Result<bool>> HasSubdirectory(string name);
-
     protected abstract Task<Result<IMutableDirectory>> CreateSubdirectoryCore(string name);
-
     protected abstract Task<Result> DeleteFileCore(string name);
-
     protected abstract Task<Result> DeleteSubdirectoryCore(string name);
-
     protected abstract Task<Result<IMutableFile>> CreateFileCore(string entryName);
 }

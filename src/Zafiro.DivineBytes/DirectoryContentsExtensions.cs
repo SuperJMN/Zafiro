@@ -9,7 +9,7 @@ public static class DirectoryContentsExtensions
     {
         path ??= Path.Empty;
         // Include files as INamedByteSourceWithPath (which implements INamedWithPath)
-        var myResoruces = container.Resources.Select(file => new ResourceWithPath(path, file));
+        var myResources = container.Resources.Select(file => new ResourceWithPath(path, file));
 
         // Include subdirectories as INamedWithPath and recursively their children
         var subcontainerResults = container.Subcontainers.SelectMany(subcontainer =>
@@ -19,7 +19,7 @@ public static class DirectoryContentsExtensions
             return subcontainer.ResourcesWithPathsRecursive(subcontainerPath);
         });
 
-        return myResoruces.Concat(subcontainerResults);
+        return myResources.Concat(subcontainerResults);
     }
 }
 

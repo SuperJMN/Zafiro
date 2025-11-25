@@ -4,7 +4,7 @@ namespace Zafiro.FileSystem.Core;
 
 public interface IZafiroDirectory
 {
-    ZafiroPath Path { get; }
+    Path Path { get; }
     Task<Result<bool>> Exists { get; }
     IFileSystemRoot FileSystem { get; }
     Task<Result<DirectoryProperties>> Properties { get; }

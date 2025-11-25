@@ -1,5 +1,3 @@
-using CSharpFunctionalExtensions;
-
 namespace Zafiro.UI.Commands;
 
 public static class CommandExtensions

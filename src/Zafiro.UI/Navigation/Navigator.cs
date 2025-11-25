@@ -1,7 +1,5 @@
 using System.Reactive.Concurrency;
-using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using CSharpFunctionalExtensions;
 using Microsoft.Extensions.DependencyInjection;
 using Zafiro.Mixins;
 using Zafiro.UI.Commands;

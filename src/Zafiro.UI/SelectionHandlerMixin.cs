@@ -1,6 +1,4 @@
-﻿using System.Reactive.Linq;
-
-namespace Zafiro.UI;
+﻿namespace Zafiro.UI;
 
 public static class SelectionHandlerMixin
 {

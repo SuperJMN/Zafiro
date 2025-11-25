@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Threading;
 using Zafiro.FileSystem.Core;
+using Zafiro.DivineBytes;
 
 namespace Zafiro.FileSystem.Tests;
 
@@ -10,8 +11,8 @@ public class HashCompareStrategyTests
     public async Task Same_hash_are_equal()
     {
         var sut = new HashCompareStrategy();
-        IZafiroFile a = new TestFile(Result.Success(new[] { (HashMethod.Md5, "Hash")}));
-        IZafiroFile b = new TestFile(Result.Success(new[] { (HashMethod.Md5, "Hash")}));
+        IZafiroFile a = new TestFile(Result.Success(new[] { (HashMethod.Md5, "Hash") }));
+        IZafiroFile b = new TestFile(Result.Success(new[] { (HashMethod.Md5, "Hash") }));
         var result = await sut.Compare(a, b);
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().BeTrue();
@@ -70,10 +71,10 @@ public class HashCompareStrategyTests
 
         public IObservable<byte> Contents { get; }
         public Task<Result<bool>> Exists { get; }
-        public ZafiroPath Path { get; }
+        public Path Path { get; } = Path.Empty;
         public Task<Result<FileProperties>> Properties { get; }
         public Task<Result<IDictionary<HashMethod, byte[]>>> Hashes { get; }
-        public IFileSystemRoot FileSystem { get; }
+        public IFileSystemRoot FileSystem { get; } = null!;
         public Task<Result> Delete() => throw new NotImplementedException();
 
         public Task<Result> SetContents(IObservable<byte> contents, CancellationToken cancellationToken = default) => throw new NotImplementedException();

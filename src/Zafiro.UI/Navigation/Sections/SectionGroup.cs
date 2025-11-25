@@ -1,5 +1,3 @@
-using CSharpFunctionalExtensions;
-
 namespace Zafiro.UI.Navigation.Sections;
 
 public class SectionGroup(string key, string? friendlyName) : ValueObject<SectionGroup>

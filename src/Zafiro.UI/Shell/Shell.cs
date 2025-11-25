@@ -1,12 +1,9 @@
 ﻿using System.Reactive.Disposables;
 using System.Reactive.Disposables.Fluent;
-using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
-using CSharpFunctionalExtensions;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI.SourceGenerators;
-using Zafiro.CSharpFunctionalExtensions;
 using Zafiro.Reactive;
 using Zafiro.UI.Navigation;
 using Zafiro.UI.Navigation.Sections;

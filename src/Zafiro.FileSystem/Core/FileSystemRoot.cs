@@ -11,97 +11,97 @@ public class FileSystemRoot : IFileSystemRoot
         this.fs = fs;
     }
 
-    public IZafiroFile GetFile(ZafiroPath path)
+    public IZafiroFile GetFile(Path path)
     {
         return new ZafiroFile(path, this);
     }
 
-    public IZafiroDirectory GetDirectory(ZafiroPath path)
+    public IZafiroDirectory GetDirectory(Path path)
     {
         return new ZafiroDirectory(path, this);
     }
 
-    public Task<Result<IEnumerable<IZafiroFile>>> GetFiles(ZafiroPath path, CancellationToken ct = default)
+    public Task<Result<IEnumerable<IZafiroFile>>> GetFiles(Path path, CancellationToken ct = default)
     {
         return fs.GetFilePaths(path, ct).Map(paths => paths.Select(zafiroPath => (IZafiroFile)new ZafiroFile(zafiroPath, this)));
     }
 
-    public Task<Result<IEnumerable<IZafiroDirectory>>> GetDirectories(ZafiroPath path, CancellationToken ct = default)
+    public Task<Result<IEnumerable<IZafiroDirectory>>> GetDirectories(Path path, CancellationToken ct = default)
     {
         return fs.GetDirectoryPaths(path, ct).Map(paths => paths.Select(zafiroPath => (IZafiroDirectory)new ZafiroDirectory(zafiroPath, this)));
     }
 
-    public Task<Result<Stream>> GetFileData(ZafiroPath path)
+    public Task<Result<Stream>> GetFileData(Path path)
     {
         return fs.GetFileData(path);
     }
 
-    public Task<Result> SetFileData(ZafiroPath path, Stream stream, CancellationToken ct = default)
+    public Task<Result> SetFileData(Path path, Stream stream, CancellationToken ct = default)
     {
         return fs.SetFileData(path, stream, ct);
     }
 
-    public Task<Result<bool>> ExistFile(ZafiroPath path)
+    public Task<Result<bool>> ExistFile(Path path)
     {
         return fs.ExistFile(path);
     }
 
-    public Task<Result> DeleteFile(ZafiroPath path)
+    public Task<Result> DeleteFile(Path path)
     {
         return fs.DeleteFile(path);
     }
 
-    public Task<Result> DeleteDirectory(ZafiroPath path)
+    public Task<Result> DeleteDirectory(Path path)
     {
         return fs.DeleteDirectory(path);
     }
 
-    public Task<Result<bool>> ExistDirectory(ZafiroPath path)
+    public Task<Result<bool>> ExistDirectory(Path path)
     {
         return fs.ExistDirectory(path);
     }
 
-    public Task<Result> CreateFile(ZafiroPath path)
+    public Task<Result> CreateFile(Path path)
     {
         return fs.CreateFile(path);
     }
 
-    public IObservable<byte> GetFileContents(ZafiroPath path)
+    public IObservable<byte> GetFileContents(Path path)
     {
         return fs.GetFileContents(path);
     }
 
-    public Task<Result> SetFileContents(ZafiroPath path, IObservable<byte> bytes, CancellationToken cancellationToken)
+    public Task<Result> SetFileContents(Path path, IObservable<byte> bytes, CancellationToken cancellationToken)
     {
         return fs.SetFileContents(path, bytes, cancellationToken);
     }
 
-    public Task<Result> CreateDirectory(ZafiroPath path)
+    public Task<Result> CreateDirectory(Path path)
     {
         return fs.CreateDirectory(path);
     }
 
-    public Task<Result<FileProperties>> GetFileProperties(ZafiroPath path)
+    public Task<Result<FileProperties>> GetFileProperties(Path path)
     {
         return fs.GetFileProperties(path);
     }
 
-    public Task<Result<IDictionary<HashMethod, byte[]>>> GetHashes(ZafiroPath path)
+    public Task<Result<IDictionary<HashMethod, byte[]>>> GetHashes(Path path)
     {
         return fs.GetHashes(path);
     }
 
-    public Task<Result<DirectoryProperties>> GetDirectoryProperties(ZafiroPath path)
+    public Task<Result<DirectoryProperties>> GetDirectoryProperties(Path path)
     {
         return fs.GetDirectoryProperties(path);
     }
 
-    public Task<Result<IEnumerable<ZafiroPath>>> GetFilePaths(ZafiroPath path, CancellationToken ct = default)
+    public Task<Result<IEnumerable<Path>>> GetFilePaths(Path path, CancellationToken ct = default)
     {
         return fs.GetFilePaths(path, ct);
     }
 
-    public Task<Result<IEnumerable<ZafiroPath>>> GetDirectoryPaths(ZafiroPath path, CancellationToken ct = default)
+    public Task<Result<IEnumerable<Path>>> GetDirectoryPaths(Path path, CancellationToken ct = default)
     {
         return fs.GetDirectoryPaths(path, ct);
     }

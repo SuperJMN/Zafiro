@@ -1,5 +1,3 @@
-using CSharpFunctionalExtensions;
-
 namespace Zafiro.UI;
 
 public class MaybeViewModel<T>(Maybe<T> maybe)

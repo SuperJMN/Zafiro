@@ -1,7 +1,5 @@
 using System;
 using System.Reactive;
-using System.Reactive.Linq;
-using CSharpFunctionalExtensions;
 using Zafiro.UI.Commands;
 
 namespace Zafiro.UI.Wizards.Slim.Builder;

@@ -1,10 +1,11 @@
 using CSharpFunctionalExtensions;
+using Zafiro.DivineBytes;
 
 namespace Zafiro.FileSystem.Core;
 
 public static class ZafiroDirectoryMixin
 {
-    public static async Task<Result<Maybe<IZafiroDirectory>>> DescendantDirectory(this IZafiroDirectory directory, ZafiroPath subDirectoryPath)
+    public static async Task<Result<Maybe<IZafiroDirectory>>> DescendantDirectory(this IZafiroDirectory directory, Path subDirectoryPath)
     {
         // Base
         if (!subDirectoryPath.RouteFragments.Any())
@@ -19,12 +20,12 @@ public static class ZafiroDirectoryMixin
         return getDescendantResult;
     }
 
-    private static ZafiroPath NextPath(ZafiroPath subDirectoryPath)
+    private static Path NextPath(Path subDirectoryPath)
     {
-        return new ZafiroPath(subDirectoryPath.RouteFragments.Skip(1));
+        return new Path(subDirectoryPath.RouteFragments.Skip(1));
     }
 
-    private static bool DoMatch(IZafiroDirectory zafiroDirectory, ZafiroPath subDirectoryPath)
+    private static bool DoMatch(IZafiroDirectory zafiroDirectory, Path subDirectoryPath)
     {
         return zafiroDirectory.Path.Name() == subDirectoryPath.RouteFragments.First();
     }
@@ -44,7 +45,7 @@ public static class ZafiroDirectoryMixin
         return maybeGetFile;
     }
 
-    public static Task<Result<IZafiroFile>> GetFromPath(this IZafiroDirectory origin, ZafiroPath path)
+    public static Task<Result<IZafiroFile>> GetFromPath(this IZafiroDirectory origin, Path path)
     {
         return Task.FromResult(Result.Success(origin.FileSystem.GetFile(origin.Path.Combine(path))));
     }

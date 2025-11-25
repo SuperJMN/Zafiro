@@ -1,5 +1,3 @@
-using CSharpFunctionalExtensions;
-
 namespace Zafiro.UI.Navigation;
 
 /// <summary>

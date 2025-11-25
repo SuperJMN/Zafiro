@@ -1,34 +1,28 @@
 ﻿using System.Reactive.Concurrency;
-using CSharpFunctionalExtensions;
-using Zafiro.DataModel;
-using Zafiro.FileSystem.Core;
-using Zafiro.FileSystem.Mutable;
-using Zafiro.FileSystem.SeaweedFS.Filer.Client;
+using Zafiro.CSharpFunctionalExtensions;
+using Zafiro.DivineBytes;
 using Zafiro.Reactive;
 
 namespace Zafiro.FileSystem.SeaweedFS;
 
-public class File(ZafiroPath path, ISeaweedFS seaweedFS) : IMutableFile
+public class File(Path path, ISeaweedFS seaweedFS) : IMutableFile
 {
-    public ZafiroPath Path { get; } = path;
+    public Path Path { get; } = path;
     public ISeaweedFS SeaweedFS { get; } = seaweedFS;
 
     public string Name => Path.Name();
     public bool IsHidden => false;
 
-    public Task<Result> SetContents(IData data, IScheduler? scheduler = null, CancellationToken cancellationToken = default)
+    public Task<Result> SetContents(IByteSource data, IScheduler? scheduler = null, CancellationToken cancellationToken = default)
     {
         return SeaweedFS.Upload(Path, data.Bytes.ToStream(), cancellationToken);
     }
 
-    public Task<Result<IData>> GetContents()
+    public Task<Result<IByteSource>> GetContents()
     {
-        return SeaweedFS.GetFileMetadata(Path).Bind(GetData);
-    }
-
-    private Result<IData> GetData(FileMetadata metadata)
-    {
-        return Data.FromStream(() => SeaweedFS.GetFileContents(Path), metadata.FileSize);
+        return SeaweedFS.GetFileMetadata(Path)
+            .Bind(_ => SeaweedFS.GetFileContents(Path))
+            .Map(stream => ByteSource.FromStream(stream));
     }
 
     public override string ToString()

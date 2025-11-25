@@ -1,5 +1,4 @@
 using System.Reactive.Concurrency;
-using CSharpFunctionalExtensions;
 using Microsoft.Extensions.DependencyInjection;
 using Zafiro.UI.Navigation.Sections;
 

@@ -3,6 +3,7 @@ using System.Reactive.Linq;
 using CSharpFunctionalExtensions;
 using Zafiro.Actions;
 using Zafiro.CSharpFunctionalExtensions;
+using Zafiro.DivineBytes;
 
 namespace Zafiro.FileSystem.Core;
 
@@ -32,7 +33,7 @@ public static class ZafiroFileExtensions
         return new PositionReportingStream(new AlwaysForwardStream(original, pr.Length));
     }
 
-    public static IZafiroFile Mirror(this IZafiroFile file, ZafiroPath root, IZafiroDirectory destinationRoot)
+    public static IZafiroFile Mirror(this IZafiroFile file, Path root, IZafiroDirectory destinationRoot)
     {
         var relativeToRoot = file.Path.MakeRelativeTo(root);
         var translatedPath = destinationRoot.Path.Combine(relativeToRoot);

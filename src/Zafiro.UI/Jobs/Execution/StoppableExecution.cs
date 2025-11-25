@@ -1,4 +1,3 @@
-using CSharpFunctionalExtensions;
 using Zafiro.ProgressReporting;
 using Zafiro.UI.Commands;
 

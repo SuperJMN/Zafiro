@@ -1,5 +1,3 @@
-using System.Reactive.Linq;
-
 namespace Zafiro.UI.Jobs;
 
 public static class JobExtensions

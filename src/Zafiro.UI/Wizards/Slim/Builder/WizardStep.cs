@@ -1,5 +1,4 @@
 using System;
-using CSharpFunctionalExtensions;
 using Zafiro.UI.Commands;
 
 namespace Zafiro.UI.Wizards.Slim.Builder;

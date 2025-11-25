@@ -1,5 +1,3 @@
-using System.Reactive.Linq;
-using CSharpFunctionalExtensions;
 using Zafiro.ProgressReporting;
 using Zafiro.Reactive;
 

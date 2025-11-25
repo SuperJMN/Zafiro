@@ -4,7 +4,7 @@ namespace Zafiro.FileSystem.Core;
 
 public class ZafiroFile : IZafiroFile
 {
-    public ZafiroFile(ZafiroPath path, IFileSystemRoot fileSystemRoot)
+    public ZafiroFile(Path path, IFileSystemRoot fileSystemRoot)
     {
         Path = path;
         FileSystem = fileSystemRoot;
@@ -13,7 +13,7 @@ public class ZafiroFile : IZafiroFile
     public IFileSystemRoot FileSystem { get; }
     public IObservable<byte> Contents => FileSystem.GetFileContents(Path);
     public Task<Result<bool>> Exists => FileSystem.ExistFile(Path);
-    public ZafiroPath Path { get; }
+    public Path Path { get; }
     public Task<Result<IDictionary<HashMethod, byte[]>>> Hashes => FileSystem.GetHashes(Path);
 
     public Task<Result> Delete()

@@ -1,6 +1,4 @@
 using System.Reactive;
-using System.Reactive.Linq;
-using CSharpFunctionalExtensions;
 using Zafiro.UI.Commands;
 using Zafiro.UI;
 

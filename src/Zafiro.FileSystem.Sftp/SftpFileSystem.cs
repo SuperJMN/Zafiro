@@ -4,6 +4,9 @@ using CSharpFunctionalExtensions;
 using Renci.SshNet;
 using Zafiro.CSharpFunctionalExtensions;
 using Zafiro.Reactive;
+using Zafiro.FileSystem.Core;
+using Zafiro.DivineBytes;
+using Path = Zafiro.DivineBytes.Path;
 
 namespace Zafiro.FileSystem.Sftp;
 
@@ -20,7 +23,7 @@ public class SftpFileSystem : IZafiroFileSystem
 
     private static string FromZafiroToFileSystem(Path path)
     {
-        return "/" + path.Path;
+        return "/" + path;
     }
 
     public static Path FromFileSystemToPath(string path)
@@ -30,13 +33,15 @@ public class SftpFileSystem : IZafiroFileSystem
 
     public IObservable<byte> GetFileContents(Path path)
     {
-        return Observable.Using(() => sftpClient.OpenRead(FromZafiroToFileSystem(path)), stream => stream.ToObservable());
+        return Observable.Using(() => sftpClient.OpenRead(FromZafiroToFileSystem(path)), stream => stream.ToObservable().SelectMany(x => x));
     }
 
     public Task<Result> SetFileContents(Path path, IObservable<byte> bytes, CancellationToken cancellationToken)
     {
-        return EnsureDirectoryExists(path.Parent())
-            .Bind(async () => await Observable.Using(() => bytes.ToStream(), stream => Observable.FromAsync(ct => Result.Try(() => sftpClient.UploadFileAsync(FromFileSystemToPath(path), stream)))));
+        return path.Parent()
+            .Map(EnsureDirectoryExists)
+            .GetValueOrDefault(Result.Success())
+            .Bind(async () => await Observable.Using(() => bytes.Buffer(1024).Select(x => x.ToArray()).ToStream(), stream => Observable.FromAsync(ct => Result.Try(() => sftpClient.UploadFileAsync(FromFileSystemToPath(path), stream)))));
     }
 
     public async Task<Result> CreateDirectory(Path path) => Result.Try(() => sftpClient.Create(FromZafiroToFileSystem(path)));
@@ -80,14 +85,16 @@ public class SftpFileSystem : IZafiroFileSystem
 
     public async Task<Result<bool>> ExistFile(Path path) => Result.Try(() => sftpClient.Exists(FromFileSystemToPath(path)));
 
-    public async  Task<Result> DeleteFile(Path path) => Result.Try(() => sftpClient.DeleteFile(FromFileSystemToPath(path)));
+    public async Task<Result> DeleteFile(Path path) => Result.Try(() => sftpClient.DeleteFile(FromFileSystemToPath(path)));
 
     public async Task<Result> DeleteDirectory(Path path) => Result.Try(() => sftpClient.DeleteDirectory(FromFileSystemToPath(path)));
     public Task<Result<Stream>> GetFileData(Path path) => Task.FromResult(Result.Try(() => (Stream)sftpClient.OpenRead(FromZafiroToFileSystem(path))));
 
     public Task<Result> SetFileData(Path path, Stream stream, CancellationToken ct = default)
     {
-        return EnsureDirectoryExists(path.Parent())
+        return path.Parent()
+            .Map(EnsureDirectoryExists)
+            .GetValueOrDefault(Result.Success())
             .Map(() => sftpClient.UploadFileAsync(FromFileSystemToPath(path), stream));
     }
 
@@ -97,7 +104,7 @@ public class SftpFileSystem : IZafiroFileSystem
         {
             if (!sftpClient.Exists(path))
             {
-                EnsureDirectoryExists(path.Parent());
+                path.Parent().Execute(p => EnsureDirectoryExists(p));
                 sftpClient.CreateDirectory(path);
             }
         });

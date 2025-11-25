@@ -1,5 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using Zafiro.FileSystem.Core;
+using Path = Zafiro.DivineBytes.Path;
 
 namespace Zafiro.FileSystem.Mutable;
 

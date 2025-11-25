@@ -17,6 +17,7 @@
         <PackageReference Include="ReactiveUI.Validation" />
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\Zafiro.FileSystem\Zafiro.FileSystem.csproj" />
+      <ProjectReference Include="..\Zafiro.FileSystem\Zafiro.FileSystem.Core.csproj" />
+      <ProjectReference Include="..\Zafiro.FileSystem.Mutable\Zafiro.FileSystem.Mutable.csproj" />
     </ItemGroup>
 </Project>

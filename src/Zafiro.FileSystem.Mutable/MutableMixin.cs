@@ -1,6 +1,8 @@
 using CSharpFunctionalExtensions;
 using DynamicData;
 using Zafiro.DivineBytes;
+using Zafiro.CSharpFunctionalExtensions;
+using Path = Zafiro.DivineBytes.Path;
 using Zafiro.FileSystem.Core;
 
 namespace Zafiro.FileSystem.Mutable;
@@ -55,7 +57,7 @@ public static class MutableMixin
     {
         return path.Parent()
             .ToResult($"Cannot get the directory of path '{path}")
-            .Map(fileSystem.GetDirectory)
+            .Bind(p => fileSystem.GetDirectory(p))
             .Bind(dir => dir.GetFile(path.Name()));
     }
 
@@ -67,6 +69,23 @@ public static class MutableMixin
             IMutableFile mutableFile => MutableMisc.GetFileKey(mutableFile.Name),
             _ => throw new ArgumentOutOfRangeException(nameof(node))
         };
+    }
+
+    public static Task<Result<INamedContainer>> ToDirectory(this IMutableDirectory directory)
+    {
+        var files = directory
+            .Files()
+            .Map(files => files.Select(f => f.AsReadOnly()))
+            .CombineSequentially();
+
+        var subDirs = directory
+            .Directories()
+            .Map(dirs => dirs.Select(f => f.ToDirectory()))
+            .CombineSequentially();
+
+        return from file in files
+               from subdir in subDirs
+               select (INamedContainer)new NamedContainer(directory.Name, file, subdir);
     }
 }
 

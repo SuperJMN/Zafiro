@@ -1,3 +1,4 @@
+using System.Net.Http;
 using CSharpFunctionalExtensions;
 
 namespace Zafiro.DivineBytes;
@@ -38,24 +39,21 @@ public class HttpUriContentProvider : IUriContentProvider, IDisposable
                 return Result.Failure<IByteSource>($"Unsupported URI scheme: {uri.Scheme}. Only HTTP and HTTPS are supported.");
             }
 
-            // Validate that the URI is accessible without creating a ByteSource yet
-            using var testResponse = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+            var response = await httpClient.GetAsync(uri, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
-            if (!testResponse.IsSuccessStatusCode)
+            try
             {
-                return Result.Failure<IByteSource>($"Error downloading from {uri}: {testResponse.StatusCode} - {testResponse.ReasonPhrase}");
-            }
-
-            // Create the ByteSource using Zafiro's HttpResponseMessageStream
-            var byteSource = ByteSource.FromAsyncStreamFactory(async () =>
-            {
-                var response = await httpClient.GetAsync(uri, cancellationToken);
                 response.EnsureSuccessStatusCode();
+                var responseStream = await HttpResponseMessageStream.Create(response);
+                var byteSource = ByteSource.FromStream(responseStream);
 
-                return await HttpResponseMessageStream.Create(response);
-            });
-
-            return Result.Success(byteSource);
+                return Result.Success(byteSource);
+            }
+            catch
+            {
+                response.Dispose();
+                throw;
+            }
         }
         catch (HttpRequestException ex)
         {

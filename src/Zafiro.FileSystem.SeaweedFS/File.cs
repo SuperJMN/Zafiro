@@ -20,12 +20,9 @@ public class File(Path path, ISeaweedFS seaweedFS) : IMutableFile
 
     public Task<Result<IByteSource>> GetContents()
     {
-        return SeaweedFS.GetFileMetadata(Path).Bind(GetData);
-    }
-
-    private Result<IByteSource> GetData(FileMetadata metadata)
-    {
-        return Result.Success(ByteSource.FromAsyncStreamFactory(async () => (await SeaweedFS.GetFileContents(Path)).Value));
+        return SeaweedFS.GetFileMetadata(Path)
+            .Bind(_ => SeaweedFS.GetFileContents(Path))
+            .Map(stream => ByteSource.FromStream(stream));
     }
 
     public override string ToString()

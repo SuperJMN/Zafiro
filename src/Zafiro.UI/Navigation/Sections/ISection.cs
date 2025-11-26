@@ -6,7 +6,6 @@ public interface ISection : INotifyPropertyChanged
 {
     bool IsVisible { get; set; }
     int SortOrder { get; set; }
-
     string Name { get; }
     string FriendlyName { get; }
     SectionGroup Group { get; }

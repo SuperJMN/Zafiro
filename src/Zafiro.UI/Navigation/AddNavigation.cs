@@ -12,18 +12,11 @@ public static class AddNavigation
 
         return serviceCollection;
     }
-    
-    public static IServiceCollection RegisterSections(this IServiceCollection serviceCollection, Action<SectionsBuilder> configure, ILogger? logger = null, IScheduler? scheduler = null)
+
+    public static IServiceCollection RegisterNavigationRoots(this IServiceCollection serviceCollection, Func<IServiceProvider, IEnumerable<INavigationRoot>> factory, ILogger? logger = null, IScheduler? scheduler = null)
     {
         serviceCollection.AddScoped<INavigator>(provider => new Navigator(provider, logger.AsMaybe(), scheduler));
-
-        serviceCollection.AddSingleton<IEnumerable<ISection>>(_ =>
-        {
-            var sectionsBuilder = new SectionsBuilder();
-            configure(sectionsBuilder);
-            return sectionsBuilder.Build();
-        });
-
+        serviceCollection.AddSingleton(factory);
         return serviceCollection;
     }
 }

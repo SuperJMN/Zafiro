@@ -4,7 +4,7 @@ namespace Zafiro.UI.Navigation;
 
 public class SectionsBuilder
 {
-    private readonly List<ISection> sections = new();
+    private readonly List<Func<IServiceProvider, INavigationRoot>> sectionFactories = new();
 
     /// <summary>
     /// Add a section whose initial content is resolved via DI using the view model type <typeparamref name="T"/>.
@@ -12,7 +12,7 @@ public class SectionsBuilder
     /// </summary>
     public SectionsBuilder Add<T>(string name, object? icon = null, SectionGroup? group = null) where T : class
     {
-        return Add(name, Observable.Empty<T>(), icon, group);
+        return Add<T>(name, Observable.Empty<T>(), icon, group);
     }
 
     /// <summary>
@@ -22,7 +22,7 @@ public class SectionsBuilder
     /// </summary>
     public SectionsBuilder Add<T>(string name, IObservable<T> initialContent, object? icon = null, SectionGroup? group = null) where T : class
     {
-        sections.Add(new ContentSection<T>(name, initialContent, icon, navigator => navigator.Go(typeof(T)), group));
+        sectionFactories.Add(provider => new NavigationRoot<T>(name, provider, icon, group));
         return this;
     }
 
@@ -33,8 +33,8 @@ public class SectionsBuilder
         return Add<T>(name, icon);
     }
 
-    public IEnumerable<ISection> Build()
+    public IEnumerable<INavigationRoot> Build(IServiceProvider provider)
     {
-        return sections;
+        return sectionFactories.Select(factory => factory(provider)).ToList();
     }
 }

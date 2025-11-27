@@ -12,7 +12,23 @@ public class SectionsBuilder
     /// </summary>
     public SectionsBuilder Add<T>(string name, object? icon = null, SectionGroup? group = null) where T : class
     {
-        return Add<T>(name, Observable.Empty<T>(), icon, group);
+        return AddSection<T>(name, name, icon, group);
+    }
+
+    /// <summary>
+    /// Add a section providing both the key name and a friendly name.
+    /// </summary>
+    public SectionsBuilder AddSection<T>(string name, string friendlyName, object? icon = null, SectionGroup? group = null, int sortOrder = 0) where T : class
+    {
+        sectionFactories.Add(provider =>
+        {
+            var root = new NavigationRoot<T>(name, provider, icon, group, friendlyName)
+            {
+                SortOrder = sortOrder
+            };
+            return root;
+        });
+        return this;
     }
 
     /// <summary>
@@ -22,8 +38,7 @@ public class SectionsBuilder
     /// </summary>
     public SectionsBuilder Add<T>(string name, IObservable<T> initialContent, object? icon = null, SectionGroup? group = null) where T : class
     {
-        sectionFactories.Add(provider => new NavigationRoot<T>(name, provider, icon, group));
-        return this;
+        return AddSection<T>(name, name, icon, group);
     }
 
     // Backwards-compat overload: ignore isPrimary

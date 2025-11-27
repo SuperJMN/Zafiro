@@ -13,7 +13,11 @@ public class ShellProperties(object header, Func<object, IObservable<object?>>? 
     {
         if (content is INavigator navigator)
         {
-            return navigator.Content.Select(o => o?.GetType().GetCustomAttribute<SectionAttribute>()?.Name);
+            return navigator.Content.Select(o =>
+            {
+                var attr = o?.GetType().GetCustomAttribute<SectionAttribute>();
+                return attr?.FriendlyName ?? attr?.Name;
+            });
         }
 
         return Observable.Return<object?>(null);

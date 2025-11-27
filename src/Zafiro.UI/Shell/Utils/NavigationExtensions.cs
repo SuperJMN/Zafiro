@@ -25,11 +25,12 @@ public static class NavigationExtensions
                 string sectionName = type.Name.Replace("ViewModel", "");
                 string formattedName = string.Concat(sectionName.Select(x => char.IsUpper(x) ? " " + x : x.ToString())).TrimStart(' ');
 
-                var friendlyName = viewModelType.sectionAttribute.Name ?? formattedName;
+                var friendlyName = viewModelType.sectionAttribute.FriendlyName ?? viewModelType.sectionAttribute.Name ?? formattedName;
+                var name = viewModelType.sectionAttribute.Name ?? formattedName;
                 var navigationRootType = typeof(NavigationRoot<>).MakeGenericType(type);
                 var navigationRoot = (INavigationRoot)Activator.CreateInstance(
                     navigationRootType,
-                    formattedName,
+                    name,
                     provider,
                     new Icon { Source = icon ?? "fa-window-maximize" },
                     null,

@@ -51,8 +51,9 @@ public static class AddNavigation
                     : type.Name;
 
                 var displayName = string.Concat(baseName.Select(x => char.IsUpper(x) ? " " + x : x.ToString())).TrimStart(' ');
-                var friendlyName = sectionAttr.Name ?? displayName;
+                var friendlyName = sectionAttr.FriendlyName ?? sectionAttr.Name ?? displayName;
                 var contractType = sectionAttr.ContractType ?? type;
+                var name = sectionAttr.Name ?? displayName;
                 var iconSource = sectionAttr.Icon ?? "fa-window-maximize";
 
                 var groupAttr = type.GetCustomAttribute<SectionGroupAttribute>();
@@ -65,7 +66,7 @@ public static class AddNavigation
                 var rootType = typeof(NavigationRoot<>).MakeGenericType(contractType);
                 var root = (INavigationRoot)Activator.CreateInstance(
                     rootType,
-                    displayName,
+                    name,
                     provider,
                     new Icon { Source = iconSource },
                     group,

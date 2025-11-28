@@ -38,7 +38,13 @@ public class SectionsBuilder
     /// </summary>
     public SectionsBuilder Add<T>(string name, IObservable<T> initialContent, object? icon = null, SectionGroup? group = null) where T : class
     {
-        return AddSection<T>(name, name, icon, group);
+        sectionFactories.Add(provider =>
+        {
+            var root = new NavigationRoot<T>(name, provider, initialContent, icon, group, name);
+            return root;
+        });
+
+        return this;
     }
 
     // Backwards-compat overload: ignore isPrimary

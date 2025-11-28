@@ -10,6 +10,5 @@ public interface INavigationRoot : INotifyPropertyChanged
     string FriendlyName { get; }
     SectionGroup Group { get; }
     object? Icon { get; }
-    IObservable<object> Content { get; }
     INavigator Navigator { get; }
 }

@@ -27,12 +27,6 @@ public partial class NavigationRoot<TInitial> : ReactiveObject, INavigationRoot,
             var scheduler = sp.GetService<IScheduler>();
             return new Navigator<TInitial>(sp, logger, scheduler);
         });
-
-        Content = Navigator.Content
-            .Where(value => value is not null)
-            .Select(value => value!)
-            .Replay(1)
-            .RefCount();
     }
 
     public void Dispose()
@@ -50,8 +44,6 @@ public partial class NavigationRoot<TInitial> : ReactiveObject, INavigationRoot,
     public SectionGroup Group => group;
 
     public object? Icon { get; }
-
-    public IObservable<object> Content { get; }
 
     public INavigator Navigator => navigator.Value;
 }

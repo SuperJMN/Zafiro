@@ -15,11 +15,14 @@ public class Navigator : INavigator
     private readonly Stack<Func<object>> navigationStack = new();
     private readonly IScheduler scheduler;
     private readonly IServiceProvider serviceProvider;
+    private bool initialLoaded;
+    private Func<Result<Unit>>? initialLoader;
 
-    public Navigator(IServiceProvider serviceProvider, Maybe<ILogger> logger, IScheduler? scheduler)
+    public Navigator(IServiceProvider serviceProvider, Maybe<ILogger> logger, IScheduler? scheduler, Func<Result<Unit>>? initialLoader = null)
     {
         this.serviceProvider = serviceProvider;
         this.logger = logger;
+        this.initialLoader = initialLoader;
 
         this.scheduler = scheduler ??
                          (SynchronizationContext.Current != null
@@ -40,7 +43,11 @@ public class Navigator : INavigator
         namedBookmarks[name] = new NavigationBookmark(navigationStack.Count);
     }
 
-    public IObservable<object?> Content => contentSubject.ObserveOn(scheduler);
+    public IObservable<object?> Content => Observable.Defer(() =>
+    {
+        EnsureInitial();
+        return contentSubject.ObserveOn(scheduler);
+    });
 
     public IEnhancedCommand<Result> Back { get; }
 
@@ -94,7 +101,7 @@ public class Navigator : INavigator
         );
     }
 
-    private Result<Unit> NavigateUsingFactory(Func<object> factory)
+    protected Result<Unit> NavigateUsingFactory(Func<object> factory)
     {
         return Result.Try(factory)
             .Tap(instance =>
@@ -104,6 +111,27 @@ public class Navigator : INavigator
                 canGoBackSubject.OnNext(navigationStack.Count > 1);
             })
             .Map(_ => Unit.Default);
+    }
+
+    private void EnsureInitial()
+    {
+        if (initialLoaded || initialLoader is null)
+        {
+            initialLoaded = true;
+            return;
+        }
+
+        initialLoaded = true;
+        var result = initialLoader();
+        if (result.IsFailure)
+        {
+            logger.Error(result.Error, "Navigation error - failed to load initial content");
+        }
+    }
+
+    protected void SetInitialLoader(Func<Result<Unit>> loader)
+    {
+        initialLoader = loader;
     }
 
     private Unit ExecuteGoBack()

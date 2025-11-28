@@ -4,7 +4,7 @@ namespace Zafiro.UI.Navigation;
 
 public class SectionsBuilder
 {
-    private readonly List<ISection> sections = new();
+    private readonly List<Func<IServiceProvider, INavigationRoot>> sectionFactories = new();
 
     /// <summary>
     /// Add a section whose initial content is resolved via DI using the view model type <typeparamref name="T"/>.
@@ -12,7 +12,23 @@ public class SectionsBuilder
     /// </summary>
     public SectionsBuilder Add<T>(string name, object? icon = null, SectionGroup? group = null) where T : class
     {
-        return Add(name, Observable.Empty<T>(), icon, group);
+        return AddSection<T>(name, name, icon, group);
+    }
+
+    /// <summary>
+    /// Add a section providing both the key name and a friendly name.
+    /// </summary>
+    public SectionsBuilder AddSection<T>(string name, string friendlyName, object? icon = null, SectionGroup? group = null, int sortOrder = 0) where T : class
+    {
+        sectionFactories.Add(provider =>
+        {
+            var root = new NavigationRoot<T>(name, provider, icon, group, friendlyName)
+            {
+                SortOrder = sortOrder
+            };
+            return root;
+        });
+        return this;
     }
 
     /// <summary>
@@ -22,7 +38,12 @@ public class SectionsBuilder
     /// </summary>
     public SectionsBuilder Add<T>(string name, IObservable<T> initialContent, object? icon = null, SectionGroup? group = null) where T : class
     {
-        sections.Add(new ContentSection<T>(name, initialContent, icon, navigator => navigator.Go(typeof(T)), group));
+        sectionFactories.Add(provider =>
+        {
+            var root = new NavigationRoot<T>(name, provider, initialContent, icon, group, name);
+            return root;
+        });
+
         return this;
     }
 
@@ -33,8 +54,8 @@ public class SectionsBuilder
         return Add<T>(name, icon);
     }
 
-    public IEnumerable<ISection> Build()
+    public IEnumerable<INavigationRoot> Build(IServiceProvider provider)
     {
-        return sections;
+        return sectionFactories.Select(factory => factory(provider)).ToList();
     }
 }

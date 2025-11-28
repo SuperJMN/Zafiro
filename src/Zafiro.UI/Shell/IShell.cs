@@ -7,8 +7,8 @@ public interface IShell
 {
     public object Header { get; set; }
     public IObservable<object?> ContentHeader { get; }
-    IEnumerable<ISection> Sections { get; }
-    ISection SelectedSection { get; set; }
+    IEnumerable<INavigationRoot> Sections { get; }
+    INavigationRoot SelectedSection { get; set; }
     INavigator Navigator { get; }
     void GoToSection(string sectionName);
 }

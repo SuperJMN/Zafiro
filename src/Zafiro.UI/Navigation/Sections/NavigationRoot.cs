@@ -69,7 +69,23 @@ public partial class NavigationRoot<TInitial> : ReactiveObject, INavigationRoot,
 internal class NavigatorFromInitialContent<TInitial> : Navigator where TInitial : class
 {
     public NavigatorFromInitialContent(IServiceProvider serviceProvider, Maybe<ILogger> logger, IScheduler? scheduler, IObservable<TInitial> initialContent)
-        : base(serviceProvider, logger, scheduler, () => NavigateUsingFactory(() => initialContent.FirstAsync().Wait()))
+        : base(serviceProvider, logger, scheduler, () =>
+        {
+            initialContent
+                .Take(1)
+                .Subscribe(
+                    content =>
+                    {
+                        var result = NavigateUsingFactory(() => content);
+                        if (result.IsFailure)
+                        {
+                            logger.Error(result.Error, "Navigation error - failed to load initial content");
+                        }
+                    },
+                    error => logger.Error(error, "Navigation error - failed to load initial content"));
+
+            return Result.Success(Unit.Default);
+        })
     {
     }
 }

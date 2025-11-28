@@ -10,11 +10,11 @@ public class Navigator : INavigator
 {
     private readonly BehaviorSubject<bool> canGoBackSubject = new(false);
     private readonly BehaviorSubject<object?> contentSubject = new(null);
-    private readonly Maybe<ILogger> logger;
     private readonly Dictionary<string, NavigationBookmark> namedBookmarks = new();
     private readonly Stack<Func<object>> navigationStack = new();
     private readonly IScheduler scheduler;
     private readonly IServiceProvider serviceProvider;
+    protected readonly Maybe<ILogger> logger;
     private bool initialLoaded;
     private Func<Result<Unit>>? initialLoader;
 

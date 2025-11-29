@@ -10,13 +10,11 @@
 		<Authors>SuperJMN</Authors>
 		<Description>The Cross-platform Crema for .NET Devs</Description>
 		<PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
-		<PackageReleaseNotes>Crema all around</PackageReleaseNotes>
 		<PackageTags>WPF XAML Cross-Platform Avalonia AvaloniaUI</PackageTags>
 		<Product>Zafiro</Product>
 		<Company>José Manuel Nieto (@SuperJMN)</Company>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageIcon>icon.png</PackageIcon>
-		<PackageIconUrl />
 	</PropertyGroup>
 
 	<ItemGroup>

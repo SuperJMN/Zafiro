@@ -34,10 +34,8 @@ public static class AddNavigation
 
     public static IServiceCollection RegisterSectionsFromAttributes(this IServiceCollection serviceCollection, Assembly assembly, ILogger? logger = null, IScheduler? scheduler = null)
     {
-        return serviceCollection.RegisterNavigationRoots(provider =>
+        return serviceCollection.RegisterSections(builder =>
         {
-            var roots = new List<INavigationRoot>();
-
             foreach (var type in assembly.GetTypes().Where(Extensions.IsSection))
             {
                 var sectionAttr = type.GetCustomAttribute<SectionAttribute>();
@@ -63,20 +61,9 @@ public static class AddNavigation
                     group = new SectionGroup(groupAttr.FriendlyName ?? groupAttr.Key);
                 }
 
-                var rootType = typeof(NavigationRoot<>).MakeGenericType(contractType);
-                var root = (INavigationRoot)Activator.CreateInstance(
-                    rootType,
-                    name,
-                    provider,
-                    new Icon { Source = iconSource },
-                    group,
-                    friendlyName)!;
-
-                root.SortOrder = sectionAttr.SortIndex;
-                roots.Add(root);
+                var method = typeof(SectionsBuilder).GetMethod(nameof(SectionsBuilder.AddSection))!.MakeGenericMethod(contractType);
+                method.Invoke(builder, new object?[] { name, friendlyName, new Icon { Source = iconSource }, group, sectionAttr.SortIndex });
             }
-
-            return roots;
         }, logger, scheduler);
     }
 }

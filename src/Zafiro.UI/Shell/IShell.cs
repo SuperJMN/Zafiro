@@ -1,4 +1,4 @@
-using Zafiro.UI.Navigation;
+using Reactive.Bindings;
 using Zafiro.UI.Navigation.Sections;
 
 namespace Zafiro.UI.Shell;
@@ -6,9 +6,8 @@ namespace Zafiro.UI.Shell;
 public interface IShell
 {
     public object Header { get; set; }
-    public IObservable<object?> ContentHeader { get; }
+    public ReadOnlyReactiveProperty<object?> ContentHeader { get; }
     IEnumerable<INavigationRoot> Sections { get; }
-    INavigationRoot SelectedSection { get; set; }
-    INavigator Navigator { get; }
+    global::Reactive.Bindings.ReactiveProperty<INavigationRoot> SelectedSection { get; }
     void GoToSection(string sectionName);
 }

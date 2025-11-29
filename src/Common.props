@@ -1,24 +1,24 @@
 <Project>
-	<PropertyGroup>
-		<AssemblyName>$(MSBuildProjectName)</AssemblyName>
-		<RootNamespace>$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
-		<IsPackable>True</IsPackable>
-	</PropertyGroup>
+    <PropertyGroup>
+        <AssemblyName>$(MSBuildProjectName)</AssemblyName>
+        <RootNamespace>$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+        <IsPackable>True</IsPackable>
+    </PropertyGroup>
 
-	<PropertyGroup>
-		<PackageId>$(MSBuildProjectName)</PackageId>
-		<Authors>SuperJMN</Authors>
-		<Description>The Cross-platform Crema for .NET Devs</Description>
-		<PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
-		<PackageTags>WPF XAML Cross-Platform Avalonia AvaloniaUI</PackageTags>
-		<Product>Zafiro</Product>
-		<Company>José Manuel Nieto (@SuperJMN)</Company>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageIcon>icon.png</PackageIcon>
-	</PropertyGroup>
+    <PropertyGroup>
+        <PackageId>$(MSBuildProjectName)</PackageId>
+        <Authors>SuperJMN</Authors>
+        <Description>The Cross-platform Crema for .NET Devs</Description>
+        <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
+        <PackageTags>WPF XAML Cross-Platform Avalonia AvaloniaUI</PackageTags>
+        <Product>Zafiro</Product>
+        <Company>José Manuel Nieto (@SuperJMN)</Company>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageIcon>icon.png</PackageIcon>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<None Include="..\..\icon.png" Pack="true" PackagePath=""/>
-	</ItemGroup>
+    <ItemGroup>
+        <None Include="..\..\icon.png" Pack="true" PackagePath=""/>
+    </ItemGroup>
 
 </Project>

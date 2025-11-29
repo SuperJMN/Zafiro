@@ -26,7 +26,7 @@ public partial class NavigationRoot<TInitial> : ReactiveObject, INavigationRoot,
             var sp = scope.Value.ServiceProvider;
             var logger = Maybe<ILogger>.From(sp.GetService<ILogger>());
             var scheduler = sp.GetService<IScheduler>();
-            return new Navigator<TInitial>(sp, logger, scheduler);
+            return new Navigator(sp, logger, scheduler);
         });
     }
 
@@ -43,7 +43,7 @@ public partial class NavigationRoot<TInitial> : ReactiveObject, INavigationRoot,
             var sp = scope.Value.ServiceProvider;
             var logger = Maybe<ILogger>.From(sp.GetService<ILogger>());
             var scheduler = sp.GetService<IScheduler>();
-            return new NavigatorFromInitialContent<TInitial>(sp, logger, scheduler, initialContent);
+            return new Navigator(sp, logger, scheduler, initialContent.Select(x => (object)x));
         });
     }
 
@@ -64,12 +64,4 @@ public partial class NavigationRoot<TInitial> : ReactiveObject, INavigationRoot,
     public object? Icon { get; }
 
     public INavigator Navigator => navigator.Value;
-}
-
-internal class NavigatorFromInitialContent<TInitial> : Navigator where TInitial : class
-{
-    public NavigatorFromInitialContent(IServiceProvider serviceProvider, Maybe<ILogger> logger, IScheduler? scheduler, IObservable<TInitial> initialContent)
-        : base(serviceProvider, logger, scheduler, () => NavigateUsingFactory(() => initialContent.FirstAsync().Wait()))
-    {
-    }
 }

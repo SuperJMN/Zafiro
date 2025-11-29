@@ -13,24 +13,25 @@ public class Navigator : INavigator
     private readonly Maybe<ILogger> logger;
     private readonly Dictionary<string, NavigationBookmark> namedBookmarks = new();
     private readonly Stack<Func<object>> navigationStack = new();
-    private readonly IScheduler scheduler;
+    protected IScheduler Scheduler { get; }
     private readonly IServiceProvider serviceProvider;
-    private bool initialLoaded;
-    private Func<Result<Unit>>? initialLoader;
-
-    public Navigator(IServiceProvider serviceProvider, Maybe<ILogger> logger, IScheduler? scheduler, Func<Result<Unit>>? initialLoader = null)
+    public Navigator(IServiceProvider serviceProvider, Maybe<ILogger> logger, IScheduler? scheduler, IObservable<object>? initialContent = null)
     {
         this.serviceProvider = serviceProvider;
         this.logger = logger;
-        this.initialLoader = initialLoader;
 
-        this.scheduler = scheduler ??
+        Scheduler = scheduler ??
                          (SynchronizationContext.Current != null
                              ? new SynchronizationContextScheduler(SynchronizationContext.Current)
-                             : Scheduler.Default);
+                             : System.Reactive.Concurrency.Scheduler.Default);
 
-        var reactiveCommand = ReactiveCommand.CreateFromTask(_ => GoBack(), canGoBackSubject.ObserveOn(this.scheduler));
+        var reactiveCommand = ReactiveCommand.CreateFromTask(_ => GoBack(), canGoBackSubject.ObserveOn(Scheduler));
         Back = reactiveCommand.Enhance();
+        
+        initialContent?
+            .Take(1)
+            .ObserveOn(Scheduler)
+            .Subscribe(obj => NavigateUsingFactory(() => obj), ex => logger.Error(ex, "Error loading initial content"));
     }
 
     public NavigationBookmark CreateBookmark()
@@ -43,11 +44,7 @@ public class Navigator : INavigator
         namedBookmarks[name] = new NavigationBookmark(navigationStack.Count);
     }
 
-    public IObservable<object?> Content => Observable.Defer(() =>
-    {
-        EnsureInitial();
-        return contentSubject.ObserveOn(scheduler);
-    });
+    public IObservable<object?> Content => contentSubject.ObserveOn(Scheduler);
 
     public IEnhancedCommand<Result> Back { get; }
 
@@ -113,26 +110,6 @@ public class Navigator : INavigator
             .Map(_ => Unit.Default);
     }
 
-    private void EnsureInitial()
-    {
-        if (initialLoaded || initialLoader is null)
-        {
-            initialLoaded = true;
-            return;
-        }
-
-        initialLoaded = true;
-        var result = initialLoader();
-        if (result.IsFailure)
-        {
-            logger.Error(result.Error, "Navigation error - failed to load initial content");
-        }
-    }
-
-    protected void SetInitialLoader(Func<Result<Unit>> loader)
-    {
-        initialLoader = loader;
-    }
 
     private Unit ExecuteGoBack()
     {

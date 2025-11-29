@@ -1,4 +1,6 @@
 using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
+using System.Reactive.Disposables.Fluent;
 using System.Reactive.Subjects;
 using Microsoft.Extensions.DependencyInjection;
 using Zafiro.Mixins;
@@ -6,33 +8,52 @@ using Zafiro.UI.Commands;
 
 namespace Zafiro.UI.Navigation;
 
-public class Navigator : INavigator
+public class Navigator : INavigator, IDisposable
 {
     private readonly BehaviorSubject<bool> canGoBackSubject = new(false);
+    private readonly SerialDisposable contentDisposable = new();
     private readonly BehaviorSubject<object?> contentSubject = new(null);
+    private readonly CompositeDisposable disposables = new();
     private readonly Maybe<ILogger> logger;
     private readonly Dictionary<string, NavigationBookmark> namedBookmarks = new();
     private readonly Stack<Func<object>> navigationStack = new();
-    protected IScheduler Scheduler { get; }
     private readonly IServiceProvider serviceProvider;
+
     public Navigator(IServiceProvider serviceProvider, Maybe<ILogger> logger, IScheduler? scheduler, IObservable<object>? initialContent = null)
     {
         this.serviceProvider = serviceProvider;
         this.logger = logger;
 
         Scheduler = scheduler ??
-                         (SynchronizationContext.Current != null
-                             ? new SynchronizationContextScheduler(SynchronizationContext.Current)
-                             : System.Reactive.Concurrency.Scheduler.Default);
+                    (SynchronizationContext.Current != null
+                        ? new SynchronizationContextScheduler(SynchronizationContext.Current)
+                        : System.Reactive.Concurrency.Scheduler.Default);
 
         var reactiveCommand = ReactiveCommand.CreateFromTask(_ => GoBack(), canGoBackSubject.ObserveOn(Scheduler));
         Back = reactiveCommand.Enhance();
-        
+
         initialContent?
             .Take(1)
             .ObserveOn(Scheduler)
-            .Subscribe(obj => NavigateUsingFactory(() => obj), ex => logger.Error(ex, "Error loading initial content"));
+            .Subscribe(obj => NavigateUsingFactory(() => obj), ex => logger.Error(ex, "Error loading initial content"))
+            .DisposeWith(disposables);
+
+        contentSubject
+            .Subscribe(obj =>
+            {
+                if (obj is IDisposable disposable)
+                {
+                    contentDisposable.Disposable = disposable;
+                }
+                else
+                {
+                    contentDisposable.Disposable = Disposable.Empty;
+                }
+            })
+            .DisposeWith(disposables);
     }
+
+    protected IScheduler Scheduler { get; }
 
     public NavigationBookmark CreateBookmark()
     {
@@ -96,6 +117,14 @@ public class Navigator : INavigator
                 })
                 .TapError(error => logger.Error(error, "Navigation error - failed to go back to named bookmark {Name}", name))
         );
+    }
+
+    public void Dispose()
+    {
+        disposables.Dispose();
+        contentDisposable.Dispose();
+        canGoBackSubject.Dispose();
+        contentSubject.Dispose();
     }
 
     protected Result<Unit> NavigateUsingFactory(Func<object> factory)

@@ -7,7 +7,7 @@ public interface IShell
 {
     public object Header { get; set; }
     public ReadOnlyReactiveProperty<object?> ContentHeader { get; }
-    IEnumerable<INavigationRoot> Sections { get; }
-    global::Reactive.Bindings.ReactiveProperty<INavigationRoot> SelectedSection { get; }
+    IEnumerable<ISection> Sections { get; }
+    global::Reactive.Bindings.ReactiveProperty<ISection> SelectedSection { get; }
     void GoToSection(string sectionName);
 }

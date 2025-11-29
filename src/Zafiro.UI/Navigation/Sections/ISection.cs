@@ -2,7 +2,7 @@ using System.ComponentModel;
 
 namespace Zafiro.UI.Navigation.Sections;
 
-public interface ISection : INotifyPropertyChanged
+public interface ISection : INotifyPropertyChanged, IDisposable
 {
     bool IsVisible { get; set; }
     int SortOrder { get; set; }
@@ -10,5 +10,5 @@ public interface ISection : INotifyPropertyChanged
     string FriendlyName { get; }
     SectionGroup Group { get; }
     object? Icon { get; }
-    IObservable<object> Content { get; }
+    INavigator Navigator { get; }
 }

@@ -5,7 +5,7 @@ namespace Zafiro.UI.Navigation
     /// <summary>
     /// Interface for navigation services
     /// </summary>
-    public interface INavigator
+    public interface INavigator : IDisposable
     {
         /// <summary>
         /// Current content displayed by the navigator
@@ -23,7 +23,7 @@ namespace Zafiro.UI.Navigation
         /// <param name="factory">Function that creates the content</param>
         /// <returns>Operation result</returns>
         Task<Result<Unit>> Go(Func<object> factory);
-        
+
         /// <summary>
         /// Navigate to a specific type with a parameter
         /// </summary>

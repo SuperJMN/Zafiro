@@ -6,35 +6,27 @@ using Zafiro.UI.Shell.Utils;
 
 namespace Zafiro.UI.Navigation;
 
-public static class AddNavigation
+public static class NavigationServiceCollectionExtensions
 {
-    public static IServiceCollection AddNavigator(this IServiceCollection serviceCollection, ILogger? logger = null, IScheduler? scheduler = null)
+    public static IServiceCollection AddSections(this IServiceCollection serviceCollection, Func<IServiceProvider, IEnumerable<ISection>> factory, ILogger? logger = null, IScheduler? scheduler = null)
     {
-        serviceCollection.AddScoped<INavigator>(provider => new Navigator(provider, logger.AsMaybe(), scheduler));
-
-        return serviceCollection;
-    }
-
-    public static IServiceCollection RegisterNavigationRoots(this IServiceCollection serviceCollection, Func<IServiceProvider, IEnumerable<INavigationRoot>> factory, ILogger? logger = null, IScheduler? scheduler = null)
-    {
-        serviceCollection.AddScoped<INavigator>(provider => new Navigator(provider, logger.AsMaybe(), scheduler));
         serviceCollection.AddSingleton(factory);
         return serviceCollection;
     }
 
-    public static IServiceCollection RegisterSections(this IServiceCollection serviceCollection, Action<SectionsBuilder> configure, ILogger? logger = null, IScheduler? scheduler = null)
+    public static IServiceCollection AddSections(this IServiceCollection serviceCollection, Action<SectionsBuilder> configure, ILogger? logger = null, IScheduler? scheduler = null)
     {
-        return serviceCollection.RegisterNavigationRoots(provider =>
+        return serviceCollection.AddSections(provider =>
         {
             var builder = new SectionsBuilder();
             configure(builder);
-            return builder.Build(provider);
+            return builder.Build(provider, scheduler, logger.AsMaybe());
         }, logger, scheduler);
     }
 
-    public static IServiceCollection RegisterSectionsFromAttributes(this IServiceCollection serviceCollection, Assembly assembly, ILogger? logger = null, IScheduler? scheduler = null)
+    public static IServiceCollection AddSectionsFromAttributes(this IServiceCollection serviceCollection, Assembly assembly, ILogger? logger = null, IScheduler? scheduler = null)
     {
-        return serviceCollection.RegisterSections(builder =>
+        return serviceCollection.AddSections(builder =>
         {
             foreach (var type in assembly.GetTypes().Where(Extensions.IsSection))
             {

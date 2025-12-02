@@ -1,45 +1,32 @@
-using System.Reactive.Concurrency;
 using Microsoft.Extensions.DependencyInjection;
 using ReactiveUI.SourceGenerators;
 
 namespace Zafiro.UI.Navigation.Sections;
 
-public partial class Section<TInitial> : ReactiveObject, ISection where TInitial : class
+public partial class Section : ReactiveObject, ISection
 {
-    private readonly Lazy<INavigator> navigator;
-    private readonly Lazy<IServiceScope> scope;
+    private readonly Lazy<INavigator> navigatorLazy;
     [Reactive] private bool isVisible = true;
     [Reactive] private int sortOrder;
 
-    public Section(string name, IServiceProvider provider, IObservable<TInitial> initialContent, IScheduler? scheduler, Maybe<ILogger> logger, object? icon = null, SectionGroup? group = null, string? friendlyName = null)
+    public Section(string name, IServiceProvider provider, Type contentType, object? icon = null, SectionGroup? group = null, string? friendlyName = null)
     {
         Name = name;
         FriendlyName = friendlyName ?? name;
+        Group = group ?? new SectionGroup();
         Icon = icon;
-        this.Group = group ?? new SectionGroup();
 
-        scope = new Lazy<IServiceScope>(provider.CreateScope);
-        navigator = new Lazy<INavigator>(() =>
+        var scope = provider.CreateScope();
+        navigatorLazy = new Lazy<INavigator>(() =>
         {
-            var sp = scope.Value.ServiceProvider;
-            return new Navigator(sp, logger, scheduler, initialContent.Select(x => (object)x));
+            var requiredService = scope.ServiceProvider.GetRequiredService<INavigator>();
+            requiredService.Go(contentType);
+            return requiredService;
         });
     }
 
-    public void Dispose()
-    {
-        if (navigator.IsValueCreated && navigator.Value is IDisposable disposableNavigator)
-        {
-            disposableNavigator.Dispose();
-        }
-
-        if (scope.IsValueCreated)
-        {
-            scope.Value.Dispose();
-        }
-    }
-
     public string Name { get; }
+    public INavigator Navigator => navigatorLazy.Value;
 
     public string FriendlyName { get; }
 
@@ -47,5 +34,8 @@ public partial class Section<TInitial> : ReactiveObject, ISection where TInitial
 
     public object? Icon { get; }
 
-    public INavigator Navigator => navigator.Value;
+    public void Dispose()
+    {
+        Navigator.Dispose();
+    }
 }

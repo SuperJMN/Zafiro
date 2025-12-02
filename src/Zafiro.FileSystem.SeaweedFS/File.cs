@@ -15,7 +15,7 @@ public class File(Path path, ISeaweedFS seaweedFS) : IMutableFile
 
     public Task<Result> SetContents(IByteSource data, IScheduler? scheduler = null, CancellationToken cancellationToken = default)
     {
-        return SeaweedFS.Upload(Path, data.Bytes.ToStream(), cancellationToken);
+        return SeaweedFS.Upload(Path, data.ToStream(), cancellationToken);
     }
 
     public Task<Result<IByteSource>> GetContents()

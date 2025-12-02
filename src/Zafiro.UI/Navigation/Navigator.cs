@@ -8,7 +8,7 @@ using Zafiro.UI.Commands;
 
 namespace Zafiro.UI.Navigation;
 
-public class Navigator : INavigator, IDisposable
+public class Navigator : INavigator
 {
     private readonly BehaviorSubject<bool> canGoBackSubject = new(false);
     private readonly SerialDisposable contentDisposable = new();
@@ -19,7 +19,7 @@ public class Navigator : INavigator, IDisposable
     private readonly Stack<Func<object>> navigationStack = new();
     private readonly IServiceProvider serviceProvider;
 
-    public Navigator(IServiceProvider serviceProvider, Maybe<ILogger> logger, IScheduler? scheduler, IObservable<object>? initialContent = null)
+    public Navigator(IServiceProvider serviceProvider, Maybe<ILogger> logger, IScheduler? scheduler)
     {
         this.serviceProvider = serviceProvider;
         this.logger = logger;
@@ -31,12 +31,6 @@ public class Navigator : INavigator, IDisposable
 
         var reactiveCommand = ReactiveCommand.CreateFromTask(_ => GoBack(), canGoBackSubject.ObserveOn(Scheduler));
         Back = reactiveCommand.Enhance();
-
-        initialContent?
-            .Take(1)
-            .ObserveOn(Scheduler)
-            .Subscribe(obj => NavigateUsingFactory(() => obj), ex => logger.Error(ex, "Error loading initial content"))
-            .DisposeWith(disposables);
 
         contentSubject
             .Subscribe(obj =>
@@ -117,6 +111,11 @@ public class Navigator : INavigator, IDisposable
                 })
                 .TapError(error => logger.Error(error, "Navigation error - failed to go back to named bookmark {Name}", name))
         );
+    }
+
+    public void SetInitialPage(Func<object> factory)
+    {
+        NavigateUsingFactory(factory);
     }
 
     public void Dispose()

@@ -62,5 +62,11 @@ namespace Zafiro.UI.Navigation
         /// <param name="name">Name of the bookmark</param>
         /// <returns>Operation result</returns>
         Task<Result<Unit>> GoBackTo(string name);
+
+        /// <summary>
+        /// Sets the initial page of the navigator.
+        /// </summary>
+        /// <param name="factory">The factory that creates the initial content.</param>
+        void SetInitialPage(Func<object> factory);
     }
 }

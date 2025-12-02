@@ -9,7 +9,7 @@ public partial class Section : ReactiveObject, ISection
     [Reactive] private bool isVisible = true;
     [Reactive] private int sortOrder;
 
-    public Section(string name, IServiceProvider provider, Type contentType, object? icon = null, SectionGroup? group = null, string? friendlyName = null)
+    public Section(string name, IServiceProvider provider, Type initialContentType, object? icon = null, SectionGroup? group = null, string? friendlyName = null)
     {
         Name = name;
         FriendlyName = friendlyName ?? name;
@@ -20,7 +20,7 @@ public partial class Section : ReactiveObject, ISection
         navigatorLazy = new Lazy<INavigator>(() =>
         {
             var requiredService = scope.ServiceProvider.GetRequiredService<INavigator>();
-            requiredService.Go(contentType);
+            requiredService.Go(initialContentType);
             return requiredService;
         });
     }

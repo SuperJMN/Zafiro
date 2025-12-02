@@ -1,6 +1,7 @@
 using System.Reactive.Concurrency;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Zafiro.UI.Navigation.Sections;
 using Zafiro.UI.Shell.Utils;
 
@@ -11,6 +12,7 @@ public static class NavigationServiceCollectionExtensions
     public static IServiceCollection AddSections(this IServiceCollection serviceCollection, Func<IServiceProvider, IEnumerable<ISection>> factory, ILogger? logger = null, IScheduler? scheduler = null)
     {
         serviceCollection.AddSingleton(factory);
+        EnsureNavigatorRegistration(serviceCollection, logger, scheduler);
         return serviceCollection;
     }
 
@@ -57,5 +59,10 @@ public static class NavigationServiceCollectionExtensions
                 method.Invoke(builder, new object?[] { name, friendlyName, new Icon { Source = iconSource }, group, sectionAttr.SortIndex });
             }
         }, logger, scheduler);
+    }
+
+    private static void EnsureNavigatorRegistration(IServiceCollection services, ILogger? logger, IScheduler? scheduler)
+    {
+        services.TryAddScoped<INavigator>(sp => new Navigator(sp, logger.AsMaybe(), scheduler ?? RxApp.MainThreadScheduler));
     }
 }

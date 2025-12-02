@@ -1,39 +1,28 @@
-﻿using System.Reactive.Concurrency;
-using System.Reactive.Linq;
-using System.Reactive.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using Zafiro.DivineBytes;
-using Zafiro.Mixins;
-using Zafiro.Reactive;
 
 namespace Zafiro.FileSystem.Core;
 
 public static class DataMixin
 {
-    public static IObservable<Result> ChunkedDump(this IByteSource data, Stream stream, IScheduler? scheduler = null,
+    /// <summary>
+    /// Reads the entire IByteSource contents as a byte array.
+    /// Returns Result to handle errors functionally instead of throwing.
+    /// </summary>
+    [Obsolete("Use ReadAll() directly on IByteSource instead")]
+    public static Task<Result<byte[]>> Bytes(this IByteSource data, CancellationToken cancellationToken = default)
+    {
+        return data.ReadAll(cancellationToken);
+    }
+
+    /// <summary>
+    /// Helper to read file contents as bytes in a single operation.
+    /// Composes GetContents + ReadAll for ergonomic total error handling.
+    /// </summary>
+    public static Task<Result<byte[]>> GetContentsBytes(
+        this Task<Result<IByteSource>> contentsResult,
         CancellationToken cancellationToken = default)
     {
-        return data.Bytes.WriteTo(stream, cancellationToken: cancellationToken, scheduler: scheduler);
-    }
-
-    public static Task<Result> DumpTo(this IByteSource data, Stream stream, IScheduler? scheduler = null, CancellationToken cancellationToken = default)
-    {
-        return ChunkedDump(data, stream, cancellationToken: cancellationToken, scheduler: scheduler).ToList()
-            .Select(list => list.Combine())
-            .ToTask(cancellationToken);
-    }
-
-    public static async Task<Result> DumpTo(this IByteSource data, string path, IScheduler? scheduler = null,
-        CancellationToken cancellationToken = default)
-    {
-        using (var stream = File.Open(path, FileMode.Create))
-        {
-            return await data.DumpTo(stream, scheduler, cancellationToken);
-        }
-    }
-
-    public static byte[] Bytes(this IByteSource data)
-    {
-        return data.Bytes.ToEnumerable().Flatten().ToArray();
+        return contentsResult.Bind(source => source.ReadAll(cancellationToken));
     }
 }

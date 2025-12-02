@@ -23,7 +23,7 @@ public class File : IMutableFile
     {
         var result = Result.Try(() => FileInfo.Create());
 
-        return result.Using(stream => data.DumpTo(stream, scheduler, cancellationToken));
+        return result.Using(stream => data.WriteTo(stream, chunkReadTimeout: default, scheduler, cancellationToken));
     }
 
     public async Task<Result<IByteSource>> GetContents()

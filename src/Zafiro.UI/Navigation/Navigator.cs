@@ -113,6 +113,11 @@ public class Navigator : INavigator
         );
     }
 
+    public void SetInitialPage(Func<object> factory)
+    {
+        NavigateUsingFactory(factory);
+    }
+
     public void Dispose()
     {
         disposables.Dispose();
@@ -186,14 +191,5 @@ public class Navigator : INavigator
         {
             namedBookmarks.Remove(key);
         }
-    }
-
-    public void Initialize<T>(IObservable<T> initialContent) where T : class
-    {
-        initialContent
-            .Take(1)
-            .ObserveOn(Scheduler)
-            .Subscribe(obj => NavigateUsingFactory(() => obj), ex => logger.Error(ex, "Error loading initial content"))
-            .DisposeWith(disposables);
     }
 }

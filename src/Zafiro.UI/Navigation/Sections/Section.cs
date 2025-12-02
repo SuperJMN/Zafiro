@@ -20,7 +20,7 @@ public partial class Section : ReactiveObject, ISection
         navigatorLazy = new Lazy<INavigator>(() =>
         {
             var requiredService = scope.ServiceProvider.GetRequiredService<INavigator>();
-            requiredService.Go(initialContentType);
+            requiredService.SetInitialPage(() => scope.ServiceProvider.GetRequiredService(initialContentType));
             return requiredService;
         });
     }

@@ -1,9 +1,14 @@
-using System.IO;
 using IOPath = System.IO.Path;
 using CSharpFunctionalExtensions;
 
 namespace Zafiro.DivineBytes;
 
+/// <summary>
+/// Provides functionality to detach data from an <see cref="IByteSource"/> and save it as a temporary file.
+/// The detached data is written to a uniquely named temporary file, which is automatically cleaned up when the
+/// file's associated stream is closed. This utility is particularly useful in scenarios where byte data needs to
+/// be temporarily offloaded into the filesystem for further processing or storage.
+/// </summary>
 public static class ByteSourceDetacher
 {
     public static async Task<Result<IByteSource>> Detach(IByteSource source, string? fileName)
@@ -31,7 +36,7 @@ public static class ByteSourceDetacher
             Options = FileOptions.DeleteOnClose
         };
 
-        return Result.Success<IByteSource>(ByteSource.FromAsyncStreamFactory(
+        return Result.Success(ByteSource.FromAsyncStreamFactory(
             () => Task.FromResult<Stream>(new FileStream(tempPath, streamOptions))));
     }
 }

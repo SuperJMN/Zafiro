@@ -414,4 +414,14 @@ public static class FunctionalMixin
     {
         return resultOfmaybe.Bind(x => x.ToResult(errorMessage));
     }
+    
+    public static Result<TResult> Select<T, TResult>(this Result<T> result, Func<T, TResult> selector)
+    {
+        return result.Map(selector);
+    }
+    
+    public static Task<Result<TResult>> Select<T, TResult>(this Task<Result<T>> taskResult, Func<T, TResult> selector)
+    {
+        return taskResult.Map(selector);
+    }
 }

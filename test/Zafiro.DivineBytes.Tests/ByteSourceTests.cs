@@ -17,18 +17,7 @@ public class ByteSourceTests
         Assert.Equal(data, chunks.SelectMany(x => x).ToArray());
     }
 
-    [Fact]
-    public async Task FromStream_keeps_stream_open_when_requested()
-    {
-        var payload = new byte[] { 1, 2, 3, 4 };
-        var trackingStream = new TrackingStream(new MemoryStream(payload));
-        var source = ByteSource.FromStream(trackingStream, leaveOpen: true, bufferSize: 2);
 
-        var collected = await source.Bytes.SelectMany(chunk => chunk).ToArray().ToTask();
-
-        Assert.Equal(payload, collected);
-        Assert.False(trackingStream.IsDisposed);
-    }
 
     [Fact]
     public async Task FromStream_disposes_stream_by_default()

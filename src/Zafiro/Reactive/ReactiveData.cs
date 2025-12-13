@@ -8,7 +8,7 @@ namespace Zafiro.Reactive;
 
 public static class ReactiveData
 {
-private const int DefaultBufferSize = 1_048_576;
+    private const int DefaultBufferSize = 1_048_576;
 
     /// <summary>
     /// Creates an observable sequence from a stream factory.
@@ -20,10 +20,7 @@ private const int DefaultBufferSize = 1_048_576;
     /// <returns>An observable sequence of byte arrays read from the stream.</returns>
     public static IObservable<byte[]> ToObservable(Func<Stream> streamFactory, int bufferSize = DefaultBufferSize)
     {
-        return Observable.Using(
-            streamFactory,
-            stream => stream.ToObservable(bufferSize)
-        );
+        return Observable.Defer(() => streamFactory().ToObservable(bufferSize));
     }
 
     /// <summary>
@@ -34,17 +31,19 @@ private const int DefaultBufferSize = 1_048_576;
     /// <param name="stream">The stream to convert.</param>
     /// <param name="bufferSize">The size of the buffer used to read from the stream (80KB by default).</param>
     /// <returns>An observable sequence of byte arrays read from the stream.</returns>
-public static IObservable<byte[]> ToObservable(this Stream stream, int bufferSize = 1_048_576)
+    public static IObservable<byte[]> ToObservable(this Stream stream, int bufferSize = DefaultBufferSize)
     {
         return Observable.Create<byte[]>(async (observer, cancellationToken) =>
         {
-            // Rent the buffer from the pool to reduce GC pressure.
-            byte[] rentedBuffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+            byte[]? rentedBuffer = null;
 
             try
             {
+                // Rent the buffer from the pool to reduce GC pressure.
+                rentedBuffer = ArrayPool<byte>.Shared.Rent(bufferSize);
+
                 // Use Memory<byte> to take advantage of improvements in ReadAsync.
-                Memory<byte> memoryBuffer = rentedBuffer;
+                Memory<byte> memoryBuffer = new Memory<byte>(rentedBuffer, 0, bufferSize);
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
@@ -63,6 +62,7 @@ public static IObservable<byte[]> ToObservable(this Stream stream, int bufferSiz
                     catch (Exception ex)
                     {
                         observer.OnError(ex);
+                        // The Finally block will handle disposal
                         return Disposable.Empty;
                     }
 
@@ -86,7 +86,12 @@ public static IObservable<byte[]> ToObservable(this Stream stream, int bufferSiz
             finally
             {
                 // Always return the buffer to the pool.
-                ArrayPool<byte>.Shared.Return(rentedBuffer);
+                if (rentedBuffer != null)
+                {
+                    ArrayPool<byte>.Shared.Return(rentedBuffer);
+                }
+
+                stream.Dispose();
             }
 
             // No action is required on unsubscription, so return an empty Disposable.
@@ -103,21 +108,24 @@ public static IObservable<byte[]> ToObservable(this Stream stream, int bufferSiz
     /// <param name="stream">The stream to convert.</param>
     /// <param name="bufferSize">The size of the buffer used to read from the stream (80KB by default).</param>
     /// <returns>An observable sequence of Memory<byte> directly referencing the read data.</returns>
-public static IObservable<Memory<byte>> ToObservableMemory(this Stream stream, int bufferSize = 1_048_576)
+    public static IObservable<Memory<byte>> ToObservableMemory(this Stream stream, int bufferSize = DefaultBufferSize)
     {
         return Observable.Create<Memory<byte>>(async (observer, cancellationToken) =>
         {
             // Use 2 buffers to allow rotation without data loss
-            byte[] buffer1 = ArrayPool<byte>.Shared.Rent(bufferSize);
-            byte[] buffer2 = ArrayPool<byte>.Shared.Rent(bufferSize);
-            byte[] currentBuffer = buffer1;
+            byte[]? buffer1 = null;
+            byte[]? buffer2 = null;
 
             try
             {
+                buffer1 = ArrayPool<byte>.Shared.Rent(bufferSize);
+                buffer2 = ArrayPool<byte>.Shared.Rent(bufferSize);
+                byte[] currentBuffer = buffer1;
+
                 int bytesRead;
                 bool useBuffer1 = true;
 
-                while ((bytesRead = await stream.ReadAsync(currentBuffer, 0, currentBuffer.Length, cancellationToken).ConfigureAwait(false)) > 0)
+                while ((bytesRead = await stream.ReadAsync(currentBuffer, 0, bufferSize, cancellationToken).ConfigureAwait(false)) > 0)
                 {
                     // Emit the memory directly without copying
                     observer.OnNext(new Memory<byte>(currentBuffer, 0, bytesRead));
@@ -141,8 +149,17 @@ public static IObservable<Memory<byte>> ToObservableMemory(this Stream stream, i
             finally
             {
                 // Always return the buffers to the pool
-                ArrayPool<byte>.Shared.Return(buffer1);
-                ArrayPool<byte>.Shared.Return(buffer2);
+                if (buffer1 is not null)
+                {
+                    ArrayPool<byte>.Shared.Return(buffer1);
+                }
+
+                if (buffer2 is not null)
+                {
+                    ArrayPool<byte>.Shared.Return(buffer2);
+                }
+
+                stream.Dispose();
             }
 
             return Disposable.Empty;

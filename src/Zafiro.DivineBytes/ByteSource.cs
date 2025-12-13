@@ -73,7 +73,7 @@ public class ByteSource(IObservable<byte[]> bytes) : IByteSource
         Func<Stream> streamFactory,
         int bufferSize = DefaultBufferSize)
     {
-        return new ByteSource(Observable.Using(streamFactory, stream => stream.ToObservable(bufferSize)));
+        return new ByteSource(Observable.Defer(() => streamFactory().ToObservable(bufferSize)));
     }
 
     /// <summary>
@@ -85,7 +85,6 @@ public class ByteSource(IObservable<byte[]> bytes) : IByteSource
     /// <returns>An IByteSource.</returns>
     public static IByteSource FromStream(
         Stream stream,
-        bool leaveOpen = false,
         int bufferSize = DefaultBufferSize)
     {
         if (stream == null)
@@ -93,17 +92,7 @@ public class ByteSource(IObservable<byte[]> bytes) : IByteSource
             throw new ArgumentNullException(nameof(stream));
         }
 
-        var streamObservable = Observable.Using(
-            () => Disposable.Create(() =>
-            {
-                if (!leaveOpen)
-                {
-                    stream.Dispose();
-                }
-            }),
-            _ => stream.ToObservable(bufferSize));
-
-        return new ByteSource(streamObservable);
+        return new ByteSource(stream.ToObservable(bufferSize));
     }
 
     /// <summary>
@@ -140,7 +129,7 @@ public class ByteSource(IObservable<byte[]> bytes) : IByteSource
         Func<Task<Stream>> streamFactory,
         int bufferSize = DefaultBufferSize)
     {
-        return new ByteSource(ObservableFactory.UsingAsync(streamFactory, stream => stream.ToObservable(bufferSize)));
+        return new ByteSource(Observable.FromAsync(streamFactory).SelectMany(stream => stream.ToObservable(bufferSize)));
     }
 
     /// <summary>

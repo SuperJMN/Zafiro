@@ -46,7 +46,7 @@ public static class MaybeExtensions
     }
 
 
-    public static Maybe<T> ToMaybeStruct<T>(this T? value) where T : struct
+    public static Maybe<T> ToMaybe<T>(this T? value) where T : struct
     {
         if (value.HasValue)
         {

@@ -46,6 +46,15 @@ public static class MaybeExtensions
     }
 
 
+    public static Maybe<T> ToMaybeStruct<T>(this T? value) where T : struct
+    {
+        if (value.HasValue)
+        {
+            return Maybe.From(value.Value);
+        }
+
+        return Maybe.None;
+    }
 
     /// <summary>
     /// Transforms each element in the payload sequence of a Maybe&lt;IEnumerable&lt;TInput&gt;&gt; via <paramref name="selector"/>.

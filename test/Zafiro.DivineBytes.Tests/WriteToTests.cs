@@ -88,4 +88,20 @@ public class WriteToTests
         Assert.True(result.IsSuccess);
         Assert.Equal(0, ms.Length);
     }
+
+    [Fact]
+    public async Task WriteTo_aborts_on_blocking_source()
+    {
+        // Arrange
+        var neverEmittingSource = new ByteSource(Observable.Never<byte[]>());
+        await using var ms = new MemoryStream();
+        var timeout = TimeSpan.FromMilliseconds(50);
+
+        // Act
+        var result = await neverEmittingSource.WriteTo(ms, chunkReadTimeout: timeout);
+
+        // Assert
+        Assert.True(result.IsFailure);
+        Assert.Contains("Timeout", result.Error);
+    }
 }

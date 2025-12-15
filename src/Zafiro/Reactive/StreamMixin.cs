@@ -39,12 +39,13 @@ int bufferSize = 1_048_576)
         chunkReadTimeout ??= TimeSpan.FromDays(1);
 
         return source
+            .Timeout(chunkReadTimeout.Value, scheduler)
             .Select(chunk =>
                 Observable.FromAsync(
                     () => Result.Try(() => output.WriteAsync(chunk, 0, chunk.Length, cancellationToken)),
-                    scheduler)
-                .Timeout(chunkReadTimeout.Value, scheduler))
+                    scheduler))
             .Concat()
+            .Catch((TimeoutException te) => Observable.Return(Result.Failure("Timeout reading from source.")))
             .DefaultIfEmpty(Result.Success());
     }
 
@@ -57,15 +58,16 @@ int bufferSize = 1_048_576)
         chunkReadTimeout ??= TimeSpan.FromDays(1);
 
         return source
+            .Timeout(chunkReadTimeout.Value, scheduler)
             .Select(chunk =>
             {
                 var copy = chunk.ToArray();
                 return Observable.FromAsync(
                         () => Result.Try(() => output.WriteAsync(copy, 0, copy.Length, cancellationToken)),
-                        scheduler)
-                    .Timeout(chunkReadTimeout.Value, scheduler);
+                        scheduler);
             })
             .Concat()
+            .Catch((TimeoutException te) => Observable.Return(Result.Failure("Timeout reading from source.")))
             .DefaultIfEmpty(Result.Success());
     }
 

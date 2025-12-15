@@ -75,13 +75,13 @@ public static class MutableMixin
     {
         var files = directory
             .Files()
-            .Map(files => files.Select(f => f.AsReadOnly()))
-            .CombineSequentially();
+            .Map(files => files.Select(f => (Func<Task<Result<INamedByteSource>>>)(() => f.AsReadOnly())))
+            .ExecuteSequentially();
 
         var subDirs = directory
             .Directories()
-            .Map(dirs => dirs.Select(f => f.ToDirectory()))
-            .CombineSequentially();
+            .Map(dirs => dirs.Select(f => (Func<Task<Result<INamedContainer>>>)(() => f.ToDirectory())))
+            .ExecuteSequentially();
 
         return from file in files
                from subdir in subDirs

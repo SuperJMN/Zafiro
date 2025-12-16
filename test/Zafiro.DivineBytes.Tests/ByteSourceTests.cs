@@ -1,5 +1,6 @@
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
+using CSharpFunctionalExtensions;
 
 namespace Zafiro.DivineBytes.Tests;
 
@@ -30,6 +31,70 @@ public class ByteSourceTests
 
         Assert.Equal(payload, collected);
         Assert.True(trackingStream.IsDisposed);
+    }
+
+    [Fact]
+    public async Task FromDisposableAsync_creates_resource_lazily_and_disposes_on_completion()
+    {
+        var resourceCreated = false;
+        var resourceDisposed = false;
+        var payload = new byte[] { 1, 2, 3 };
+
+        var source = ByteSource.FromDisposableAsync(
+            async () =>
+            {
+                await Task.Yield();
+                resourceCreated = true;
+                return Result.Success<DisposableResource>(
+                    new DisposableResource(payload, () => resourceDisposed = true));
+            },
+            resource => ByteSource.FromBytes(resource.Data));
+
+        // Resource not created yet
+        Assert.False(resourceCreated);
+
+        // Consume the bytes
+        var result = await source.Bytes.SelectMany(x => x).ToArray().ToTask();
+
+        // Resource was created and disposed
+        Assert.True(resourceCreated);
+        Assert.True(resourceDisposed);
+        Assert.Equal(payload, result);
+    }
+
+    [Fact]
+    public async Task FromPublish_handles_result_packager_and_disposes_resource()
+    {
+        var resourceDisposed = false;
+        var payload = new byte[] { 4, 5, 6 };
+
+        var source = ByteSource.FromPublish(
+            async () =>
+            {
+                await Task.Yield();
+                return Result.Success<DisposableResource>(
+                    new DisposableResource(payload, () => resourceDisposed = true));
+            },
+            resource => Result.Success<IByteSource>(ByteSource.FromBytes(resource.Data)));
+
+        var result = await source.Bytes.SelectMany(x => x).ToArray().ToTask();
+
+        Assert.True(resourceDisposed);
+        Assert.Equal(payload, result);
+    }
+
+    private sealed class DisposableResource : IDisposable
+    {
+        private readonly Action onDispose;
+        public byte[] Data { get; }
+
+        public DisposableResource(byte[] data, Action onDispose)
+        {
+            Data = data;
+            this.onDispose = onDispose;
+        }
+
+        public void Dispose() => onDispose();
     }
 
     private sealed class TrackingStream : Stream
@@ -73,3 +138,4 @@ public class ByteSourceTests
         }
     }
 }
+

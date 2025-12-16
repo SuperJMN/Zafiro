@@ -133,6 +133,80 @@ public class ByteSource(IObservable<byte[]> bytes) : IByteSource
     }
 
     /// <summary>
+    /// Creates a ByteSource from an async factory that produces a disposable resource,
+    /// which is then transformed into a ByteSource. The resource is created lazily on subscription
+    /// and disposed automatically when the stream completes or errors.
+    /// </summary>
+    /// <typeparam name="T">The type of the disposable resource.</typeparam>
+    /// <param name="resourceFactory">Async factory that creates the disposable resource wrapped in a Result.</param>
+    /// <param name="byteSourceFactory">Function that creates an IByteSource from the resource.</param>
+    /// <returns>An IByteSource that manages the resource lifecycle.</returns>
+    public static IByteSource FromDisposableAsync<T>(
+        Func<Task<Result<T>>> resourceFactory,
+        Func<T, IByteSource> byteSourceFactory) where T : IDisposable
+    {
+        return new ByteSource(Observable.Defer(() =>
+            Observable.FromAsync(resourceFactory)
+                .SelectMany(result => result.IsSuccess
+                    ? byteSourceFactory(result.Value).Bytes.Finally(() => result.Value.Dispose())
+                    : Observable.Throw<byte[]>(new InvalidOperationException(result.Error)))));
+    }
+
+    /// <summary>
+    /// Creates a ByteSource from an async factory that produces a disposable resource,
+    /// which is then transformed into a ByteSource. The transform can fail, returning a Result.
+    /// The resource is created lazily on subscription and disposed automatically.
+    /// </summary>
+    /// <typeparam name="T">The type of the disposable resource.</typeparam>
+    /// <param name="resourceFactory">Async factory that creates the disposable resource wrapped in a Result.</param>
+    /// <param name="transform">Function that transforms the resource into a Result&lt;IByteSource&gt;.</param>
+    /// <returns>An IByteSource that manages the resource lifecycle.</returns>
+    public static IByteSource FromDisposableAsync<T>(
+        Func<Task<Result<T>>> resourceFactory,
+        Func<T, Result<IByteSource>> transform) where T : IDisposable
+    {
+        return FromDisposableAsync(
+            resourceFactory,
+            resource => transform(resource).Match(
+                src => src,
+                error => throw new InvalidOperationException(error)));
+    }
+
+    /// <summary>
+    /// Creates a ByteSource from an async factory that produces a disposable resource,
+    /// which is then transformed asynchronously into a ByteSource. The transform can fail.
+    /// The resource is created lazily on subscription and disposed automatically.
+    /// </summary>
+    /// <typeparam name="T">The type of the disposable resource.</typeparam>
+    /// <param name="resourceFactory">Async factory that creates the disposable resource wrapped in a Result.</param>
+    /// <param name="transformAsync">Async function that transforms the resource into a Result&lt;IByteSource&gt;.</param>
+    /// <returns>An IByteSource that manages the resource lifecycle.</returns>
+    public static IByteSource FromDisposableAsync<T>(
+        Func<Task<Result<T>>> resourceFactory,
+        Func<T, Task<Result<IByteSource>>> transformAsync) where T : IDisposable
+    {
+        return new ByteSource(Observable.Defer(() =>
+            Observable.FromAsync(resourceFactory)
+                .SelectMany(async result =>
+                {
+                    if (result.IsFailure)
+                    {
+                        return Observable.Throw<byte[]>(new InvalidOperationException(result.Error));
+                    }
+
+                    var transformResult = await transformAsync(result.Value);
+                    return transformResult.Match(
+                        src => src.Bytes.Finally(() => result.Value.Dispose()),
+                        error =>
+                        {
+                            result.Value.Dispose();
+                            return Observable.Throw<byte[]>(new InvalidOperationException(error));
+                        });
+                })
+                .Switch()));
+    }
+
+    /// <summary>
     /// Subscribes to the underlying IObservable of byte arrays.
     /// </summary>
     /// <param name="observer">Observer that will receive the byte arrays.</param>

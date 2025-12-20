@@ -7,7 +7,7 @@ namespace Zafiro.UI.Wizards.Classic;
 /// <summary>
 /// Classic wizard implementation that navigates through steps and exposes a synchronous final result.
 /// </summary>
-public class Wizard<TResult> : ReactiveObject, IWizard<TResult>
+public class Wizard<TResult> : ReactiveObject, IWizard<TResult>, IBackCommandProvider
 {
     private readonly IList<IStep?> createdPages;
     private readonly IList<Func<IStep?, IStep>> pageFactories;

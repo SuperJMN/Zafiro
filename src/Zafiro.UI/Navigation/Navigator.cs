@@ -29,7 +29,27 @@ public class Navigator : INavigator
                         ? new SynchronizationContextScheduler(SynchronizationContext.Current)
                         : System.Reactive.Concurrency.Scheduler.Default);
 
-        var reactiveCommand = ReactiveCommand.CreateFromTask(_ => GoBack(), canGoBackSubject.ObserveOn(Scheduler));
+        var contentBackCanExecute = contentSubject
+            .Select(content => content is IBackCommandProvider provider
+                ? ((IReactiveCommand)provider.Back).CanExecute
+                : Observable.Return(false))
+            .Switch()
+            .StartWith(false);
+
+        var contentBackIsExecuting = contentSubject
+            .Select(content => content is IBackCommandProvider provider
+                ? ((IReactiveCommand)provider.Back).IsExecuting
+                : Observable.Return(false))
+            .Switch()
+            .StartWith(false);
+
+        var canExecute = canGoBackSubject
+            .CombineLatest(contentBackCanExecute, contentBackIsExecuting,
+                (canGoBack, canContentGoBack, isContentBackExecuting) =>
+                    canContentGoBack || (canGoBack && !isContentBackExecuting))
+            .ObserveOn(Scheduler);
+
+        var reactiveCommand = ReactiveCommand.CreateFromTask(_ => GoBack(), canExecute);
         Back = reactiveCommand.Enhance();
 
         contentSubject
@@ -82,9 +102,25 @@ public class Navigator : INavigator
     public Task<Result<Unit>> GoBack()
     {
         return Task.FromResult(
-            Result.Try(() => ExecuteGoBack())
+            Result.Try(() => TryGoBackFromContent() ? Unit.Default : ExecuteGoBack())
                 .TapError(error => logger.Error(error, "Navigation error - failed to go back"))
         );
+    }
+
+    private bool TryGoBackFromContent()
+    {
+        if (contentSubject.Value is not IBackCommandProvider { Back: var backCommand })
+        {
+            return false;
+        }
+
+        if (!backCommand.CanExecute(null))
+        {
+            return false;
+        }
+
+        backCommand.Execute(null);
+        return true;
     }
 
     public Task<Result<Unit>> GoBackTo(NavigationBookmark bookmark)

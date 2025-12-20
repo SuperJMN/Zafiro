@@ -68,7 +68,7 @@ public class ByteSourceTests
         var resourceDisposed = false;
         var payload = new byte[] { 4, 5, 6 };
 
-        var source = ByteSource.FromPublish(
+        var source = ByteSource.FromDisposableAsync(
             async () =>
             {
                 await Task.Yield();

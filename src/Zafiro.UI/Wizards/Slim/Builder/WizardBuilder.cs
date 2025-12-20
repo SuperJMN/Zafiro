@@ -1,4 +1,5 @@
 using System;
+using System.Reactive.Concurrency;
 using Zafiro.UI;
 using Zafiro.UI.Commands;
 
@@ -216,7 +217,25 @@ public class WizardBuilder<TResult>(IEnumerable<IStepDefinition> steps)
         return BuildWizard(StepKind.Completion);
     }
 
-    private SlimWizard<TResult> BuildWizard(StepKind lastStepKind)
+    /// <summary>
+    /// Builds the wizard, marking the final step as Commit (allows navigating back from last page),
+    /// using the provided scheduler to marshal state updates (typically UI thread).
+    /// </summary>
+    public SlimWizard<TResult> WithCommitFinalStep(IScheduler scheduler)
+    {
+        return BuildWizard(StepKind.Commit, scheduler);
+    }
+
+    /// <summary>
+    /// Builds the wizard, marking the final step as Completion (prevents navigating back from last page),
+    /// using the provided scheduler to marshal state updates (typically UI thread).
+    /// </summary>
+    public SlimWizard<TResult> WithCompletionFinalStep(IScheduler scheduler)
+    {
+        return BuildWizard(StepKind.Completion, scheduler);
+    }
+
+    private SlimWizard<TResult> BuildWizard(StepKind lastStepKind, IScheduler? scheduler = null)
     {
         List<IStepDefinition> normal = steps[..^1];
         IStepDefinition lastStep = steps[^1];
@@ -234,6 +253,6 @@ public class WizardBuilder<TResult>(IEnumerable<IStepDefinition> steps)
             lastStep.GetNextCommand,
             lastStep.GetTitle));
 
-        return new SlimWizard<TResult>(allSteps.Cast<IWizardStep>().ToList());
+        return new SlimWizard<TResult>(allSteps.Cast<IWizardStep>().ToList(), scheduler);
     }
 }

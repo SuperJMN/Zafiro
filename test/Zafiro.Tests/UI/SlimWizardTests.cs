@@ -1,7 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive;
+using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
+using System.Threading.Tasks;
 using CSharpFunctionalExtensions;
 using ReactiveUI;
 using Zafiro.UI.Commands;
@@ -12,12 +16,14 @@ namespace Zafiro.Tests.UI;
 
 public class SlimWizardTests
 {
+    private static readonly IScheduler Scheduler = ImmediateScheduler.Instance;
+
     [Fact]
     public void Page_is_set_after_build()
     {
         var wizard = WizardBuilder
             .StartWith(() => new MyPage(), page => page.DoSomething, "")
-            .WithCommitFinalStep();
+            .WithCommitFinalStep(Scheduler);
 
         Assert.NotNull(wizard.CurrentPage);
         Assert.NotNull(wizard.CurrentPage.Title);
@@ -35,8 +41,8 @@ public class SlimWizardTests
             _ => Observable.Return(string.Empty));
         var steps = new List<IWizardStep> { step };
 
-        var ex = Assert.Throws<ReactiveUI.UnhandledErrorException>(() => { new SlimWizard<object>(steps); });
-        Assert.IsType<InvalidOperationException>(ex.InnerException);
+        var ex = Assert.Throws<InvalidOperationException>(() => { new SlimWizard<object>(steps, Scheduler); });
+        Assert.Contains("Next command", ex.Message);
     }
 
     [Fact]
@@ -50,19 +56,26 @@ public class SlimWizardTests
             _ => Observable.Return(string.Empty));
         var steps = new List<IWizardStep> { step };
 
-        var ex = Assert.Throws<ReactiveUI.UnhandledErrorException>(() => { new SlimWizard<object>(steps); });
-        Assert.IsType<InvalidOperationException>(ex.InnerException);
+        var ex = Assert.Throws<InvalidOperationException>(() => { new SlimWizard<object>(steps, Scheduler); });
+        Assert.Contains("null page", ex.Message);
     }
 
     [Fact]
-    public void Go_next_sets_correct_page()
+    public async Task Go_next_sets_correct_page()
     {
         var wizard = WizardBuilder
             .StartWith(() => new MyPage(), page => page.DoSomething, "")
             .Then(i => new MyIntPage(i), _ => ReactiveCommand.Create(() => Result.Success("")).Enhance(), "")
-            .WithCommitFinalStep();
+            .WithCommitFinalStep(Scheduler);
 
         wizard.Next.TryExecute();
+        await wizard
+            .WhenAnyValue(x => x.CurrentPage)
+            .Select(page => page.Content)
+            .OfType<MyIntPage>()
+            .Take(1)
+            .Timeout(TimeSpan.FromSeconds(2))
+            .ToTask();
 
         Assert.NotNull(wizard.CurrentPage);
         Assert.NotNull(wizard.CurrentPage.Title);
@@ -75,7 +88,7 @@ public class SlimWizardTests
         var wizard = WizardBuilder
             .StartWith(() => new MyPage(), page => page.DoSomething, "")
             .Then(i => new MyIntPage(i), _ => ReactiveCommand.Create(() => Result.Success("")).Enhance(), "")
-            .WithCommitFinalStep();
+            .WithCommitFinalStep(Scheduler);
 
         // Tries to go next, but nothing should happen
         wizard.Next.TryExecute();
@@ -87,31 +100,33 @@ public class SlimWizardTests
     }
 
     [Fact]
-    public void Finished_wizard_should_notify_result()
+    public async Task Finished_wizard_should_notify_result()
     {
         var wizard = WizardBuilder
             .StartWith(() => new MyPage(), page => page.DoSomething, "")
             .Then(i => new MyIntPage(i), _ => ReactiveCommand.Create(() => Result.Success("Finished!")).Enhance(), "")
-            .WithCommitFinalStep();
+            .WithCommitFinalStep(Scheduler);
 
         var result = "";
         wizard.Finished.Subscribe(value => result = value);
-        wizard.Next.TryExecute();
-        wizard.Next.TryExecute();
+        await wizard.TypedNext.Execute().Timeout(TimeSpan.FromSeconds(2)).ToTask();
+        await wizard.TypedNext.Execute().Timeout(TimeSpan.FromSeconds(2)).ToTask();
+        await wizard.Finished.Take(1).Timeout(TimeSpan.FromSeconds(2)).ToTask();
 
         Assert.Equal("Finished!", result);
     }
 
     [Fact]
-    public void Finished_wizard_cannot_go_next()
+    public async Task Finished_wizard_cannot_go_next()
     {
         var wizard = WizardBuilder
             .StartWith(() => new MyPage(), page => page.DoSomething, "")
             .Then(i => new MyIntPage(i), _ => ReactiveCommand.Create(() => Result.Success("")).Enhance(), "")
-            .WithCommitFinalStep();
+            .WithCommitFinalStep(Scheduler);
 
-        wizard.Next.TryExecute();
-        wizard.Next.TryExecute();
+        await wizard.TypedNext.Execute().Timeout(TimeSpan.FromSeconds(2)).ToTask();
+        await wizard.TypedNext.Execute().Timeout(TimeSpan.FromSeconds(2)).ToTask();
+        await wizard.Finished.Take(1).Timeout(TimeSpan.FromSeconds(2)).ToTask();
 
         Assert.Equal(1, wizard.CurrentStepIndex);
     }
@@ -122,7 +137,7 @@ public class SlimWizardTests
         var wizard = WizardBuilder
             .StartWith(() => new MyPage(), page => page.DoSomething, "")
             .Then(i => new MyIntPage(i), _ => ReactiveCommand.Create(() => Result.Success("")).Enhance(), "")
-            .WithCommitFinalStep();
+            .WithCommitFinalStep(Scheduler);
 
         Observable.Return(Unit.Default).InvokeCommand(wizard.Back);
 
@@ -135,7 +150,7 @@ public class SlimWizardTests
         var wizard = WizardBuilder
             .StartWith(() => new MyPage(), _ => ReactiveCommand.Create(() => Result.Failure<int>("Error")).Enhance(), "")
             .Then(i => new MyIntPage(i), _ => ReactiveCommand.Create(() => Result.Failure<string>("Error")).Enhance(), "")
-            .WithCommitFinalStep();
+            .WithCommitFinalStep(Scheduler);
 
         wizard.Next.TryExecute();
 
@@ -151,7 +166,7 @@ public class SlimWizardTests
         var wizard = WizardBuilder
             .StartWith(() => new MyPage(), page => page.DoSomething, "")
             .Then(i => new MyIntPage(i), _ => ReactiveCommand.Create(() => Result.Success("")).Enhance(), "")
-            .WithCommitFinalStep();
+            .WithCommitFinalStep(Scheduler);
 
         wizard.Next.TryExecute();
         wizard.Back.TryExecute();
@@ -162,14 +177,21 @@ public class SlimWizardTests
     }
     
     [Fact]
-    public void Page_completion_cannot_go_back()
+    public async Task Page_completion_cannot_go_back()
     {
         var wizard = WizardBuilder
             .StartWith(() => new MyPage(), page => page.DoSomething, "")
             .Then(i => new MyIntPage(i), _ => ReactiveCommand.Create(() => Result.Success("")).Enhance(), "")
-            .WithCompletionFinalStep();
+            .WithCompletionFinalStep(Scheduler);
 
         wizard.Next.TryExecute();
+        await wizard
+            .WhenAnyValue(x => x.CurrentPage)
+            .Select(page => page.Content)
+            .OfType<MyIntPage>()
+            .Take(1)
+            .Timeout(TimeSpan.FromSeconds(2))
+            .ToTask();
         wizard.Back.TryExecute();
 
         Assert.NotNull(wizard.CurrentPage);
@@ -183,6 +205,9 @@ public static class ReactiveCommandExtensions
     public static IDisposable TryExecute(
         this IEnhancedCommand command)
     {
-        return Observable.Return(Unit.Default).InvokeCommand(command);
+        if (command.CanExecute(null))
+            command.Execute(null);
+
+        return Disposable.Empty;
     }
 }

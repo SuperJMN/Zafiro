@@ -18,4 +18,7 @@ public interface IPage
 
     /// <summary>Gets the zero-based page index within the wizard.</summary>
     public int Index { get; }
+
+    /// <summary>Gets the kind of step (Normal, Commit, or Completion).</summary>
+    StepKind Kind { get; }
 }

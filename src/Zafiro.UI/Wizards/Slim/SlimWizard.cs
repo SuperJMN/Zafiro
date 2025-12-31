@@ -174,7 +174,7 @@ public sealed class SlimWizard<TResult> : ReactiveObject, ISlimWizard<TResult>, 
         var nextCommand = GetOrCreateNextCommand(index, pageInstance);
         var titleObservable = GetOrCreateTitleObservable(index, pageInstance);
 
-        var page = new Page(index, pageInstance, nextCommand, step.Title, titleObservable);
+        var page = new Page(index, pageInstance, nextCommand, step.Title, titleObservable, step.Kind);
         CurrentStep = (index, step);
         CurrentTypedPage = page;
         CurrentPage = page;

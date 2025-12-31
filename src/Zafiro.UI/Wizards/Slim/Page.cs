@@ -11,4 +11,5 @@ public record Page(
     object Content,
     IEnhancedCommand<Result<object>> NextCommand,
     string Title,
-    IObservable<string> TitleObservable) : IPage;
+    IObservable<string> TitleObservable,
+    StepKind Kind) : IPage;

@@ -279,6 +279,11 @@ public sealed class SlimWizard<TResult> : ReactiveObject, ISlimWizard<TResult>, 
 
     private void ClearStepCache(int index)
     {
+        if (pageInstances[index] is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
+
         pageInstances[index] = null;
         nextCommands[index] = null;
         titleObservables[index] = null;

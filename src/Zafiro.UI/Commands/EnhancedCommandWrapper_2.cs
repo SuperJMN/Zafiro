@@ -83,6 +83,7 @@ public class EnhancedCommandWrapper<T> : IEnhancedCommand<T>
 
 public static class EnhancedCommand
 {
+    // --- Result<T> variants (existing) ---
     public static IEnhancedCommand<Result<T>> Create<T>(Func<Result<T>> execute, IObservable<bool>? canExecute = null, string? text = null, string? name = null)
     {
         return ReactiveCommand.Create(execute, canExecute).Enhance(text, name);
@@ -91,5 +92,48 @@ public static class EnhancedCommand
     public static IEnhancedCommand<Result<T>> Create<T>(Func<Task<Result<T>>> task, IObservable<bool>? canExecute = null, string? text = null, string? name = null)
     {
         return ReactiveCommand.CreateFromTask(task, canExecute).Enhance(text, name);
+    }
+
+    // --- Simple actions (no return value) ---
+    public static IEnhancedCommand<Unit> Create(Action execute, IObservable<bool>? canExecute = null, string? text = null, string? name = null)
+    {
+        return ReactiveCommand.Create(execute, canExecute).Enhance(text, name);
+    }
+
+    public static IEnhancedCommand<Unit> Create(Func<Task> execute, IObservable<bool>? canExecute = null, string? text = null, string? name = null)
+    {
+        return ReactiveCommand.CreateFromTask(execute, canExecute).Enhance(text, name);
+    }
+
+    // --- Functions with return value ---
+    public static IEnhancedCommand<T> CreateWithResult<T>(Func<T> execute, IObservable<bool>? canExecute = null, string? text = null, string? name = null)
+    {
+        return ReactiveCommand.Create(execute, canExecute).Enhance(text, name);
+    }
+
+    public static IEnhancedCommand<T> CreateWithResult<T>(Func<Task<T>> execute, IObservable<bool>? canExecute = null, string? text = null, string? name = null)
+    {
+        return ReactiveCommand.CreateFromTask(execute, canExecute).Enhance(text, name);
+    }
+
+    // --- With input parameter ---
+    public static IEnhancedCommand<TIn, TOut> Create<TIn, TOut>(Func<TIn, TOut> execute, IObservable<bool>? canExecute = null, string? text = null, string? name = null)
+    {
+        return ReactiveCommand.Create(execute, canExecute).Enhance(text, name);
+    }
+
+    public static IEnhancedCommand<TIn, TOut> Create<TIn, TOut>(Func<TIn, Task<TOut>> execute, IObservable<bool>? canExecute = null, string? text = null, string? name = null)
+    {
+        return ReactiveCommand.CreateFromTask(execute, canExecute).Enhance(text, name);
+    }
+
+    public static IEnhancedCommand<TIn, Unit> Create<TIn>(Action<TIn> execute, IObservable<bool>? canExecute = null, string? text = null, string? name = null)
+    {
+        return ReactiveCommand.Create(execute, canExecute).Enhance(text, name);
+    }
+
+    public static IEnhancedCommand<TIn, Unit> Create<TIn>(Func<TIn, Task> execute, IObservable<bool>? canExecute = null, string? text = null, string? name = null)
+    {
+        return ReactiveCommand.CreateFromTask(execute, canExecute).Enhance(text, name);
     }
 }

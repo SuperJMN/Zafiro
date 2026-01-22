@@ -6,6 +6,7 @@ namespace Zafiro.UI.Navigation.Sections;
 public partial class Section : ReactiveObject, ISection
 {
     private readonly Lazy<INavigator> navigatorLazy;
+    private readonly IServiceScope sectionScope;
     [Reactive] private bool isVisible = true;
     [Reactive] private int sortOrder;
 
@@ -16,11 +17,11 @@ public partial class Section : ReactiveObject, ISection
         Group = group ?? new SectionGroup();
         Icon = icon;
 
-        var scope = provider.CreateScope();
+        sectionScope = provider.CreateScope();
         navigatorLazy = new Lazy<INavigator>(() =>
         {
-            var requiredService = scope.ServiceProvider.GetRequiredService<INavigator>();
-            requiredService.SetInitialPage(() => scope.ServiceProvider.GetRequiredService(initialContentType));
+            var requiredService = sectionScope.ServiceProvider.GetRequiredService<INavigator>();
+            requiredService.SetInitialPage(() => sectionScope.ServiceProvider.GetRequiredService(initialContentType));
             return requiredService;
         });
     }
@@ -36,6 +37,11 @@ public partial class Section : ReactiveObject, ISection
 
     public void Dispose()
     {
-        Navigator.Dispose();
+        if (navigatorLazy.IsValueCreated)
+        {
+            navigatorLazy.Value.Dispose();
+        }
+
+        sectionScope.Dispose();
     }
 }

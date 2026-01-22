@@ -11,7 +11,7 @@ public static class ServiceCollectionExtensions
 
         foreach (var viewModelType in viewModelTypes)
         {
-            services.AddScoped(viewModelType);
+            services.AddTransient(viewModelType);
         }
 
         return services;

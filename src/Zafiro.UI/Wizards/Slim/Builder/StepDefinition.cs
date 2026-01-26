@@ -28,14 +28,7 @@ public class StepDefinition<TPrevious, TPage, TResult>(
     /// <inheritdoc />
     public object CreatePage(object? previousResult)
     {
-        try
-        {
-            this.previousResult = previousResult is null ? default! : (TPrevious)previousResult;
-        }
-        catch (InvalidCastException)
-        {
-            throw new InvalidCastException($"Failed to cast object of type '{previousResult?.GetType().FullName}' to '{typeof(TPrevious).FullName}' in Step '{Title}'.");
-        }
+        this.previousResult = previousResult is null ? default! : (TPrevious)previousResult;
         return pageFactory(this.previousResult);
     }
 
@@ -45,17 +38,9 @@ public class StepDefinition<TPrevious, TPage, TResult>(
         if (nextCommandFactory == null)
             return null;
 
-        Console.Error.WriteLine($"[StepDefinition] GetNextCommand for '{Title}'. Page: {page.GetType().Name}. Prev: {previousResult?.GetType().Name}. Expected TResult: {typeof(TResult).FullName}");
-
         var typedPage = (TPage)page;
         var typedCommand = nextCommandFactory(typedPage, previousResult);
-        return new CommandAdapter<Result<TResult>, Result<object>>(typedCommand, result =>
-        {
-            if (result.IsSuccess)
-                Console.Error.WriteLine($"[CommandAdapter] Step '{Title}' converting result. TResult: {typeof(TResult).FullName}. Actual Value type: {result.Value?.GetType().FullName}");
-
-            return result.Map(x => (object)x);
-        });
+        return new CommandAdapter<Result<TResult>, Result<object>>(typedCommand, result => result.Map(x => (object)x));
     }
 
     /// <inheritdoc />

@@ -212,7 +212,6 @@ public sealed class SlimWizard<TResult> : ReactiveObject, ISlimWizard<TResult>, 
             return;
         }
 
-        Console.Error.WriteLine($"[SlimWizard] Step {CurrentStepIndex} completed. Storing result type: {value?.GetType().FullName}");
         results.Add(value);
         NavigateToIndex(CurrentStepIndex + 1);
     }

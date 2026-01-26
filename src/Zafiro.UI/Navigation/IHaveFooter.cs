@@ -1,6 +1,8 @@
+using System;
+
 namespace Zafiro.UI.Navigation;
 
 public interface IHaveFooter
 {
-    object Footer { get; }
+    IObservable<object> Footer { get; }
 }

@@ -1,6 +1,8 @@
+using System;
+
 namespace Zafiro.UI.Navigation;
 
 public interface IHaveHeader
 {
-    object Header { get; }
+    IObservable<object> Header { get; }
 }

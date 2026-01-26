@@ -204,35 +204,50 @@ public class WizardBuilder<TResult>(IEnumerable<IStepDefinition> steps)
     /// <summary>
     /// Builds the wizard, marking the final step as Commit (allows navigating back from last page).
     /// </summary>
+    /// <summary>
+    /// Builds the wizard.
+    /// </summary>
+    /// <param name="finalStepKind">The behavior of the final step (default: Commit - allows back).</param>
+    /// <param name="scheduler">Scheduler for state updates (default: MainThread).</param>
+    public SlimWizard<TResult> Build(StepKind finalStepKind = StepKind.Commit, IScheduler? scheduler = null)
+    {
+        return BuildWizard(finalStepKind, scheduler);
+    }
+
+    /// <summary>
+    /// Obsolete: Use Build() instead.
+    /// </summary>
+    [Obsolete("Use Build(StepKind.Commit) instead.")]
     public SlimWizard<TResult> WithCommitFinalStep()
     {
-        return BuildWizard(StepKind.Commit);
+        return Build(StepKind.Commit);
     }
 
     /// <summary>
-    /// Builds the wizard, marking the final step as Completion (prevents navigating back from last page).
+    /// Obsolete: Use Build() instead.
     /// </summary>
+    [Obsolete("Use Build(StepKind.Completion) instead.")]
     public SlimWizard<TResult> WithCompletionFinalStep()
     {
-        return BuildWizard(StepKind.Completion);
+        return Build(StepKind.Completion);
     }
 
     /// <summary>
-    /// Builds the wizard, marking the final step as Commit (allows navigating back from last page),
-    /// using the provided scheduler to marshal state updates (typically UI thread).
+    /// Obsolete: Use Build() instead.
     /// </summary>
+    [Obsolete("Use Build(StepKind.Commit, scheduler) instead.")]
     public SlimWizard<TResult> WithCommitFinalStep(IScheduler scheduler)
     {
-        return BuildWizard(StepKind.Commit, scheduler);
+        return Build(StepKind.Commit, scheduler);
     }
 
     /// <summary>
-    /// Builds the wizard, marking the final step as Completion (prevents navigating back from last page),
-    /// using the provided scheduler to marshal state updates (typically UI thread).
+    /// Obsolete: Use Build() instead.
     /// </summary>
+    [Obsolete("Use Build(StepKind.Completion, scheduler) instead.")]
     public SlimWizard<TResult> WithCompletionFinalStep(IScheduler scheduler)
     {
-        return BuildWizard(StepKind.Completion, scheduler);
+        return Build(StepKind.Completion, scheduler);
     }
 
     private SlimWizard<TResult> BuildWizard(StepKind lastStepKind, IScheduler? scheduler = null)

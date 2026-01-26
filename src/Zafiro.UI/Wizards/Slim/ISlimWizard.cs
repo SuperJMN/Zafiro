@@ -13,8 +13,13 @@ public interface ISlimWizard
     /// <summary>Gets the command to navigate backward.</summary>
     IEnhancedCommand Back { get; }
 
+
+
     /// <summary>Gets the current page.</summary>
     IPage CurrentPage { get; }
+
+    /// <summary>Gets the footer of the current page, if any.</summary>
+    IObservable<object?> PageFooter { get; }
 
     /// <summary>Gets the total number of pages.</summary>
     int TotalPages { get; }

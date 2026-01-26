@@ -1,6 +1,7 @@
 using System.Reactive.Concurrency;
 using System.Reactive.Subjects;
 using Zafiro.UI.Commands;
+using Zafiro.UI.Navigation;
 
 namespace Zafiro.UI.Wizards.Slim;
 
@@ -8,7 +9,7 @@ namespace Zafiro.UI.Wizards.Slim;
 /// Slim wizard that drives navigation and exposes a final result when completed.
 /// </summary>
 /// <typeparam name="TResult">The type of the final result.</typeparam>
-public sealed class SlimWizard<TResult> : ReactiveObject, ISlimWizard<TResult>, IBackCommandProvider
+public sealed class SlimWizard<TResult> : ReactiveObject, ISlimWizard<TResult>, IHaveHeader, IHaveFooter
 {
     private readonly IList<IWizardStep> steps;
     private readonly IScheduler scheduler;
@@ -83,16 +84,28 @@ public sealed class SlimWizard<TResult> : ReactiveObject, ISlimWizard<TResult>, 
             })
             .ObserveOn(this.scheduler);
 
-        Back = ReactiveCommand.Create(NavigateBack, canGoBack).Enhance();
+        Back = ReactiveCommand.Create(NavigateBack, canGoBack).Enhance("Back");
 
         Finished = finishedSubject.AsObservable();
     }
+
+    IObservable<object> IHaveHeader.Header => Observable.Return(new WizardHeader(this)).Select(x => (object)x);
+
+    IObservable<object> IHaveFooter.Footer => Observable.Return(new WizardFooter(this)).Select(x => (object)x);
+
+    public IObservable<object?> PageFooter => this.WhenAnyValue(x => x.CurrentPage)
+        .Select(page => page is { Content: IHaveFooter { Footer: { } } haveFooter }
+            ? haveFooter.Footer.Select(x => (object?)x)
+            : Observable.Return<object?>(null))
+        .Switch();
 
     /// <summary>Observable that emits the final result once and completes.</summary>
     public IObservable<TResult> Finished { get; }
 
     /// <summary>Command to navigate to the previous page, when allowed.</summary>
     public IEnhancedCommand Back { get; }
+
+
 
     /// <summary>Total number of pages in the wizard.</summary>
     public int TotalPages { get; }

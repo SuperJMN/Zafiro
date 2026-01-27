@@ -7,6 +7,10 @@ public interface IEnhancedCommand :
     ICommand,
     IReactiveCommand
 {
+    new IObservable<bool> CanExecute { get; }
+    IObservable<bool> CanExecuteObservable => CanExecute;
+    new IObservable<bool> IsExecuting { get; }
+    IObservable<bool> IsExecutingObservable => IsExecuting;
     public string? Name { get; }
     public string? Text { get; }
 }

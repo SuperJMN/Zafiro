@@ -33,4 +33,9 @@ public static class CommandExtensions
         var enhanced = new EnhancedReactiveCommandWrapper<Result<Unit>>(reactiveCommand, text, name);
         return new CommandAdapter<Result<Unit>, Result>(enhanced, r => (Result)r, name);
     }
+
+    public static IEnhancedCommand<Result> AsResult<T>(this IEnhancedCommand<Result<T>> command)
+    {
+        return new CommandAdapter<Result<T>, Result>(command, r => r, command.Name);
+    }
 }

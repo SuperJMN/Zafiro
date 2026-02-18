@@ -84,6 +84,16 @@ public class EnhancedCommandWrapper<T> : IEnhancedCommand<T>
 public static class EnhancedCommand
 {
     // --- Result<T> variants (existing) ---
+    public static IEnhancedCommand<Result> CreateWithResult(Func<Result> execute, IObservable<bool>? canExecute = null, string? text = null, string? name = null)
+    {
+        return ReactiveCommand.Create(execute, canExecute).Enhance(text, name);
+    }
+
+    public static IEnhancedCommand<Result> CreateWithResult(Func<Task<Result>> execute, IObservable<bool>? canExecute = null, string? text = null, string? name = null)
+    {
+        return ReactiveCommand.CreateFromTask(execute, canExecute).Enhance(text, name);
+    }
+
     public static IEnhancedCommand<Result<T>> Create<T>(Func<Result<T>> execute, IObservable<bool>? canExecute = null, string? text = null, string? name = null)
     {
         return ReactiveCommand.Create(execute, canExecute).Enhance(text, name);

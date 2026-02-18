@@ -118,6 +118,33 @@ public class EnhancedCommandCreateTests
         result.Should().Be(99);
     }
 
+    // --- CreateWithResult (Func<Result> / Func<Task<Result>>) ---
+
+    [Fact]
+    public async Task CreateWithResult_Result_Success()
+    {
+        var cmd = EnhancedCommand.CreateWithResult(() => Result.Success());
+
+        var result = await cmd.Execute().FirstAsync();
+
+        result.IsSuccess.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CreateWithResult_FuncTaskResult_Failure()
+    {
+        var cmd = EnhancedCommand.CreateWithResult(async () =>
+        {
+            await Task.Delay(1);
+            return Result.Failure("error");
+        });
+
+        var result = await cmd.Execute().FirstAsync();
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be("error");
+    }
+
     // --- Create<TIn, TOut> (with input parameter) ---
 
     [Fact]

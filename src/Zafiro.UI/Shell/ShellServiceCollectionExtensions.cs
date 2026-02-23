@@ -1,4 +1,3 @@
-using System.Reactive.Concurrency;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Zafiro.UI.Navigation;
@@ -21,18 +20,14 @@ public static class ShellServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="logger">Optional Serilog logger for navigation diagnostics.</param>
-    /// <param name="scheduler">
-    /// Optional scheduler for navigation operations. Defaults to <c>RxApp.MainThreadScheduler</c>.
-    /// </param>
     /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddZafiroShell(
         this IServiceCollection services,
-        ILogger? logger = null,
-        IScheduler? scheduler = null)
+        ILogger? logger = null)
     {
         services.AddSingleton<IShell, Shell>();
         services.TryAddScoped<INavigator>(sp =>
-            new Navigator(sp, logger.AsMaybe(), scheduler ?? RxApp.MainThreadScheduler));
+            new Navigator(sp, logger.AsMaybe(), RxApp.MainThreadScheduler));
 
         return services;
     }

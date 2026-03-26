@@ -23,8 +23,8 @@ public class Shell : IShell, IDisposable
     public IEnumerable<ISection> Sections { get; }
     public global::Reactive.Bindings.ReactiveProperty<ISection> SelectedSection { get; }
 
-    public void GoToSection(string sectionName)
+    public void GoToSection(string sectionId)
     {
-        SelectedSection.Value = Sections.First(x => x.Name == sectionName);
+        SelectedSection.Value = Sections.First(x => x.Id == sectionId);
     }
 }

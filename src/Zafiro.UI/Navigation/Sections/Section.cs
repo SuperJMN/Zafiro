@@ -12,7 +12,7 @@ public partial class Section : ReactiveObject, ISection
 
     public Section(string name, IServiceProvider provider, Type initialContentType, object? icon = null, SectionGroup? group = null, string? friendlyName = null)
     {
-        Name = name;
+        Id = name;
         FriendlyName = friendlyName ?? name;
         Group = group ?? new SectionGroup();
         Icon = icon;
@@ -26,7 +26,8 @@ public partial class Section : ReactiveObject, ISection
         });
     }
 
-    public string Name { get; }
+    public string Id { get; }
+    public string? ShortName { get; set; }
     public INavigator Navigator => navigatorLazy.Value;
 
     public string FriendlyName { get; }

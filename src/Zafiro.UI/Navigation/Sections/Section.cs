@@ -9,6 +9,7 @@ public partial class Section : ReactiveObject, ISection
     private readonly IServiceScope sectionScope;
     [Reactive] private bool isVisible = true;
     [Reactive] private int sortOrder;
+    private string? shortName;
 
     public Section(string name, IServiceProvider provider, Type initialContentType, object? icon = null, SectionGroup? group = null, string? friendlyName = null)
     {
@@ -27,7 +28,16 @@ public partial class Section : ReactiveObject, ISection
     }
 
     public string Id { get; }
-    public string? ShortName { get; set; }
+    public string? ShortName
+    {
+        get => string.IsNullOrWhiteSpace(shortName)
+            ? string.IsNullOrWhiteSpace(FriendlyName)
+                ? Id
+                : FriendlyName
+            : shortName;
+        set => this.RaiseAndSetIfChanged(ref shortName, value);
+    }
+
     public INavigator Navigator => navigatorLazy.Value;
 
     public string FriendlyName { get; }

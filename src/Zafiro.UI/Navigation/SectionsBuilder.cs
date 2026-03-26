@@ -10,13 +10,14 @@ public class SectionsBuilder
     /// <summary>
     ///     Add a section providing both the key name and a friendly name.
     /// </summary>
-    public SectionsBuilder AddSection<T>(string name, string friendlyName, object? icon = null, SectionGroup? group = null, int sortOrder = 0) where T : class
+    public SectionsBuilder AddSection<T>(string name, string friendlyName, object? icon = null, SectionGroup? group = null, int sortOrder = 0, string? shortName = null) where T : class
     {
         sectionFactories.Add((provider, scheduler, logger) =>
         {
             var root = new Section(name, provider, typeof(T), icon, group, friendlyName)
             {
-                SortOrder = sortOrder
+                SortOrder = sortOrder,
+                ShortName = shortName
             };
             return root;
         });

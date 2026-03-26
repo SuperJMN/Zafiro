@@ -13,6 +13,11 @@ public class SectionAttribute(string? name = null, string? icon = null, int sort
     /// </summary>
     public string? FriendlyName { get; set; }
 
+    /// <summary>
+    /// Optional abbreviated display name for compact section presentations.
+    /// </summary>
+    public string? ShortName { get; set; }
+
     public string? Icon { get; } = icon;
     public int SortIndex { get; } = sortIndex;
 

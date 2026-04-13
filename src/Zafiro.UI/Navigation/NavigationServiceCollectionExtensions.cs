@@ -11,7 +11,11 @@ public static class NavigationServiceCollectionExtensions
 {
     public static IServiceCollection AddSections(this IServiceCollection serviceCollection, Func<IServiceProvider, IEnumerable<ISection>> factory, ILogger? logger = null, IScheduler? scheduler = null)
     {
-        serviceCollection.AddSingleton(factory);
+        serviceCollection.AddSingleton(new SectionFactory(factory));
+        serviceCollection.TryAddSingleton<IEnumerable<ISection>>(sp =>
+            sp.GetServices<SectionFactory>()
+              .SelectMany(f => f.Create(sp))
+              .ToList());
         EnsureNavigatorRegistration(serviceCollection, logger, scheduler);
         return serviceCollection;
     }

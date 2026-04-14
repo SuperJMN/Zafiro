@@ -1,4 +1,6 @@
 nuget:
   enabled: true
   source: https://api.nuget.org/v3/index.json
-  apiKeyEnvVar: NUGET_API_KEY
+  apiKey:
+    from: env
+    name: NUGET_API_KEY

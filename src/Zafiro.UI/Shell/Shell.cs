@@ -9,7 +9,11 @@ public class Shell : IShell, IDisposable
     public Shell(IEnumerable<ISection> sections, IServiceProvider provider)
     {
         Sections = sections;
-        SelectedSection = new global::Reactive.Bindings.ReactiveProperty<ISection>(Sections.FirstOrDefault());
+        var initial = Sections
+            .Where(s => s.IsVisible)
+            .OrderBy(s => s.SortOrder)
+            .FirstOrDefault();
+        SelectedSection = new global::Reactive.Bindings.ReactiveProperty<ISection>(initial);
     }
 
     public void Dispose()

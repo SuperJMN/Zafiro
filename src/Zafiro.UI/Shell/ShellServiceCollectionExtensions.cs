@@ -27,7 +27,7 @@ public static class ShellServiceCollectionExtensions
     {
         services.AddSingleton<IShell, Shell>();
         services.TryAddScoped<INavigator>(sp =>
-            new Navigator(sp, logger.AsMaybe(), RxApp.MainThreadScheduler));
+            new Navigator(sp, logger.AsMaybe(), RxSchedulers.MainThreadScheduler));
 
         return services;
     }

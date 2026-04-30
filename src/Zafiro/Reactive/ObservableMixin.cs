@@ -147,7 +147,7 @@ public static class ObservableMixin
         IScheduler scheduler = null)
     {
         strategy ??= ExponentialBackoff;
-        scheduler ??= RxApp.TaskpoolScheduler;
+        scheduler ??= RxSchedulers.TaskpoolScheduler;
 
         if (retryOnError == null)
         {

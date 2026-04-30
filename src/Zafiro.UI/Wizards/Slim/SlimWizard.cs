@@ -47,7 +47,7 @@ public sealed class SlimWizard<TResult> : ReactiveObject, ISlimWizard<TResult>, 
     {
         EnsureValidSteps(steps);
         this.steps = steps;
-        this.scheduler = scheduler ?? RxApp.MainThreadScheduler;
+        this.scheduler = scheduler ?? RxSchedulers.MainThreadScheduler;
         TotalPages = steps.Count;
 
         pageInstances = new object?[TotalPages];

@@ -67,6 +67,6 @@ public static class NavigationServiceCollectionExtensions
 
     private static void EnsureNavigatorRegistration(IServiceCollection services, ILogger? logger, IScheduler? scheduler)
     {
-        services.TryAddScoped<INavigator>(sp => new Navigator(sp, logger.AsMaybe(), scheduler ?? RxApp.MainThreadScheduler));
+        services.TryAddScoped<INavigator>(sp => new Navigator(sp, logger.AsMaybe(), scheduler ?? RxSchedulers.MainThreadScheduler));
     }
 }

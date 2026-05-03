@@ -10,6 +10,19 @@ namespace Zafiro.DivineBytes;
 public static class ByteSourceExtensions
 {
     public static Stream ToStream(this IByteSource byteSource) => byteSource.Bytes.ToStream();
+
+    /// <summary>
+    /// Creates a seekable <see cref="Stream"/> by blocking until the complete observable has been materialized.
+    /// </summary>
+    /// <remarks>
+    /// This is a synchronous bridge for APIs that require a seekable stream and inspect <see cref="Stream.Length"/>.
+    /// It must not be called from inside an Rx subscription/operator, <c>CurrentThreadScheduler</c> work item,
+    /// UI thread, or any code path already executing as part of the same observable pipeline. Doing so can deadlock
+    /// when the source is scheduled on the current thread. Prefer <c>WriteTo</c> at an imperative boundary
+    /// and pass a real seekable stream, such as a temporary <see cref="FileStream"/>, to synchronous APIs.
+    /// Use <see cref="ReadAll"/> only when the payload is known to be small or the target API requires
+    /// <c>byte[]</c>.
+    /// </remarks>
     public static Stream ToStreamSeekable(this IByteSource byteSource) => byteSource.Bytes.ToStreamSeekable();
 
     /// <summary>
@@ -17,6 +30,11 @@ public static class ByteSourceExtensions
     /// Any error in the underlying observable (I/O, decoding, pipeline)
     /// is captured and returned as a failed Result instead of throwing.
     /// </summary>
+    /// <remarks>
+    /// This buffers the complete source in memory. Use it only for payloads that are known to be small or when a
+    /// target API really requires <c>byte[]</c>. For large payloads, stream to the destination or materialize to a
+    /// temporary file at the boundary that requires seeking.
+    /// </remarks>
     public static async Task<Result<byte[]>> ReadAll(
         this IByteSource source,
         CancellationToken cancellationToken = default)
@@ -43,6 +61,10 @@ public static class ByteSourceExtensions
     /// Any error in the underlying observable (I/O, decoding, pipeline)
     /// is captured and returned as a failed Result instead of throwing.
     /// </summary>
+    /// <remarks>
+    /// This buffers the complete source in memory before decoding. Use it only for text payloads that are known to
+    /// be small.
+    /// </remarks>
     public static async Task<Result<string>> ReadAllText(
         this IByteSource source,
         Encoding? encoding = null,

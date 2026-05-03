@@ -1,4 +1,5 @@
 using System.Reactive.Linq;
+using CSharpFunctionalExtensions;
 
 namespace Zafiro.DivineBytes.Unix;
 
@@ -20,9 +21,14 @@ public class UnixFile : INamedByteSource, IPermissioned, IOwned
             ? inner.Bytes
             : Observable.Empty<byte[]>();
 
+    public Maybe<long> Length
+        => Permissions.OwnerRead
+            ? inner.Length
+            : Maybe.From(0L);
+
     public IDisposable Subscribe(IObserver<byte[]> observer)
     {
-        return inner.Subscribe(observer);
+        return Bytes.Subscribe(observer);
     }
 
     public int OwnerId { get; }

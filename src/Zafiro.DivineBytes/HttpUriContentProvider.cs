@@ -45,7 +45,10 @@ public class HttpUriContentProvider : IUriContentProvider, IDisposable
             {
                 response.EnsureSuccessStatusCode();
                 var responseStream = await HttpResponseMessageStream.Create(response);
-                var byteSource = ByteSource.FromStream(responseStream);
+                var length = response.Content.Headers.ContentLength.HasValue
+                    ? Maybe.From(response.Content.Headers.ContentLength.Value)
+                    : Maybe<long>.None;
+                var byteSource = ByteSource.FromStream(responseStream, length);
 
                 return Result.Success(byteSource);
             }

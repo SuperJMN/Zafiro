@@ -9,15 +9,27 @@ namespace Zafiro.DivineBytes;
 public static class ByteSourcePropertiesMixin
 {
     /// <summary>
-    /// Flattens to array
+    /// Synchronously flattens the complete observable into a byte array.
     /// </summary>
-    /// <param name="data"></param>
-    /// <returns></returns>
+    /// <remarks>
+    /// This method blocks while enumerating the observable. Do not call it from inside Rx operators,
+    /// subscriptions, <c>CurrentThreadScheduler</c> work, or UI-thread paths. Prefer asynchronous
+    /// materialization at an imperative boundary. For large payloads, stream to a file instead of collecting
+    /// the whole sequence in memory.
+    /// </remarks>
     public static byte[] Array(this IObservable<byte[]> data)
     {
         return data.ToEnumerable().Flatten().ToArray();
     }
 
+    /// <summary>
+    /// Emits the total number of bytes produced by the observable.
+    /// </summary>
+    /// <remarks>
+    /// The returned observable is lazy and should be subscribed or awaited asynchronously. Blocking it with
+    /// <c>Wait()</c>, <c>Result</c>, or <c>GetAwaiter().GetResult()</c> from inside the same Rx pipeline can
+    /// deadlock when the source is scheduled on the current thread.
+    /// </remarks>
     public static IObservable<long> GetSize(this IObservable<byte[]> data)
     {
         return data.Sum(bytes => (long)bytes.Length);
@@ -51,9 +63,19 @@ public static class ByteSourcePropertiesMixin
 
     public static IObservable<long> GetSize(this IByteSource byteSource)
     {
-        return byteSource.Bytes.GetSize();
+        return byteSource.Length.HasValue
+            ? Observable.Return(byteSource.Length.Value)
+            : byteSource.Bytes.GetSize();
     }
 
+    /// <summary>
+    /// Synchronously flattens the complete byte source into a byte array.
+    /// </summary>
+    /// <remarks>
+    /// This method blocks while enumerating the source. Do not call it from inside Rx operators,
+    /// subscriptions, <c>CurrentThreadScheduler</c> work, or UI-thread paths. For large payloads, prefer
+    /// streaming to a file instead of collecting the whole source in memory.
+    /// </remarks>
     public static byte[] Array(this IByteSource byteSource)
     {
         return byteSource.Bytes.Array();

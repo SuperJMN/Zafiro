@@ -168,6 +168,13 @@ public static class ObservableMixin
             .Dematerialize();
     }
 
+    /// <summary>
+    /// Creates a seekable stream from a byte observable by buffering and synchronously caching the full sequence.
+    /// </summary>
+    /// <remarks>
+    /// This is a blocking bridge over <see cref="ToStreamSeekable"/>. Do not call it from
+    /// inside Rx operators, subscriptions, <c>CurrentThreadScheduler</c> callbacks, or UI-thread paths.
+    /// </remarks>
     public static Stream AsSeekableStream(this IObservable<byte> observable, int bufferSize = 4096)
     {
         return ToStreamSeekable(observable.Buffer(bufferSize).Select(list => list.ToArray()));
@@ -188,6 +195,16 @@ public static class ObservableMixin
         return pipe.Reader.AsStream();
     }
 
+    /// <summary>
+    /// Creates a seekable stream by caching the complete observable on first read.
+    /// </summary>
+    /// <remarks>
+    /// This method blocks in <see cref="ResetableObservableStream"/> when <see cref="Stream.Length"/>
+    /// or <see cref="Stream.Read(byte[], int, int)"/> is requested. Do not call it from inside an Rx
+    /// subscription/operator, <c>CurrentThreadScheduler</c> callback, or UI-thread path that depends on the
+    /// same observable completing. Materialize asynchronously first and use a real seekable stream, such as
+    /// a temporary <see cref="FileStream"/>, when a synchronous API requires seeking or <see cref="Stream.Length"/>.
+    /// </remarks>
     public static Stream ToStreamSeekable(this IObservable<byte[]> observable)
     {
         return new ResetableObservableStream(observable);

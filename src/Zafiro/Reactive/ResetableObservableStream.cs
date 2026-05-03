@@ -5,6 +5,16 @@ using System.Threading;
 
 namespace Zafiro.Reactive;
 
+/// <summary>
+/// Seekable stream adapter that caches an observable byte sequence on first use.
+/// </summary>
+/// <remarks>
+/// This adapter is intentionally a blocking bridge. <see cref="Length"/> and <see cref="Read(byte[], int, int)"/>
+/// wait until the source observable completes. It is only safe at imperative boundaries where no work needed to
+/// complete the source is queued on the same thread. Do not use it from inside Rx operators, subscriptions, or
+/// UI-thread code; materialize the observable asynchronously and pass a real seekable stream instead. For large
+/// payloads, prefer a temporary <see cref="FileStream"/> over an in-memory buffer.
+/// </remarks>
 public class ResetableObservableStream(IObservable<byte[]> observable) : Stream
 {
     private readonly object lockObject = new();

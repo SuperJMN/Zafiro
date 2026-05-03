@@ -2,16 +2,15 @@ using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Text;
-using System.Linq;
 using CSharpFunctionalExtensions;
 using Zafiro.Reactive;
 
 namespace Zafiro.DivineBytes;
 
 /// <summary>
-/// A reactive source of byte arrays that also provides an optional asynchronous way to retrieve its length.
+/// A reactive source of byte arrays with optional length metadata.
 /// </summary>
-public class ByteSource(IObservable<byte[]> bytes) : IByteSource
+public class ByteSource(IObservable<byte[]> bytes, Maybe<long> length = default) : IByteSource
 {
     private const int DefaultBufferSize = 1_048_576;
 
@@ -20,11 +19,14 @@ public class ByteSource(IObservable<byte[]> bytes) : IByteSource
     /// </summary>
     public IObservable<byte[]> Bytes => bytes;
 
+    /// <inheritdoc />
+    public Maybe<long> Length => length;
+
     /// <summary>
     /// Constructor overload that accepts an observable of byte chunks (IEnumerable<byte>) 
     /// and transforms each chunk into a byte array internally.
     /// </summary>
-    public ByteSource(IObservable<IEnumerable<byte>> byteChunks) : this(byteChunks.Select(x => x.ToArray()))
+    public ByteSource(IObservable<IEnumerable<byte>> byteChunks, Maybe<long> length = default) : this(byteChunks.Select(x => x.ToArray()), length)
     {
     }
 
@@ -38,7 +40,7 @@ public class ByteSource(IObservable<byte[]> bytes) : IByteSource
     public static IByteSource FromBytes(byte[] bytes, int bufferSize = DefaultBufferSize)
     {
         // Avoid per-byte observables and avoid extra ToArray() copies; emit chunks directly
-        return FromByteObservable(bytes.Chunk(bufferSize).ToObservable(Scheduler.Immediate));
+        return FromByteObservable(bytes.Chunk(bufferSize).ToObservable(Scheduler.Immediate), bytes.LongLength);
     }
 
     /// <summary>
@@ -46,9 +48,9 @@ public class ByteSource(IObservable<byte[]> bytes) : IByteSource
     /// </summary>
     /// <param name="byteChunks">Observable sequence where each item is a chunk of bytes (IEnumerable&lt;byte&gt;).</param>
     /// <returns>An IByteSource.</returns>
-    public static IByteSource FromByteChunks(IObservable<IEnumerable<byte>> byteChunks)
+    public static IByteSource FromByteChunks(IObservable<IEnumerable<byte>> byteChunks, Maybe<long> length = default)
     {
-        return new ByteSource(byteChunks);
+        return new ByteSource(byteChunks, length);
     }
 
     /// <summary>
@@ -56,15 +58,46 @@ public class ByteSource(IObservable<byte[]> bytes) : IByteSource
     /// </summary>
     /// <param name="byteObservable">Observable sequence where each item is an array of bytes.</param>
     /// <returns>An IByteSource.</returns>
-    public static IByteSource FromByteObservable(
-        IObservable<byte[]> byteObservable)
+    public static IByteSource FromByteObservable(IObservable<byte[]> byteObservable, Maybe<long> length = default)
     {
-        return new ByteSource(byteObservable);
+        return new ByteSource(byteObservable, length);
+    }
+
+    public static IByteSource FromByteObservable(IObservable<byte[]> byteObservable, long length)
+    {
+        return new ByteSource(byteObservable, Maybe.From(length));
+    }
+
+    /// <summary>
+    /// Concatenates byte sources while preserving the total length when every source provides it.
+    /// </summary>
+    public static IByteSource Concat(params IByteSource[] sources)
+    {
+        return Concat((IEnumerable<IByteSource>)sources);
+    }
+
+    /// <summary>
+    /// Concatenates byte sources while preserving the total length when every source provides it.
+    /// </summary>
+    public static IByteSource Concat(IEnumerable<IByteSource> sources)
+    {
+        var sourceList = sources.ToList();
+        if (sourceList.Count == 0)
+        {
+            return FromBytes([]);
+        }
+
+        var concatenated = sourceList.Select(source => source.Bytes).Concat();
+        var concatenatedLength = sourceList.All(source => source.Length.HasValue)
+            ? Maybe.From(sourceList.Sum(source => source.Length.Value))
+            : Maybe<long>.None;
+
+        return FromByteObservable(concatenated, concatenatedLength);
     }
 
     /// <summary>
     /// Creates a ByteSource from a synchronous Stream factory.
-    /// The getLength function can provide a length if known.
+    /// Use the overload that accepts <see cref="Maybe{T}"/> when the length is known without opening the stream.
     /// </summary>
     /// <param name="streamFactory">A factory method that returns a Stream to read from.</param>
     /// <param name="bufferSize">Size of each emitted chunk.</param>
@@ -73,14 +106,21 @@ public class ByteSource(IObservable<byte[]> bytes) : IByteSource
         Func<Stream> streamFactory,
         int bufferSize = DefaultBufferSize)
     {
-        return new ByteSource(Observable.Defer(() => streamFactory().ToObservable(bufferSize)));
+        return FromStreamFactory(streamFactory, Maybe<long>.None, bufferSize);
+    }
+
+    public static IByteSource FromStreamFactory(
+        Func<Stream> streamFactory,
+        Maybe<long> length,
+        int bufferSize = DefaultBufferSize)
+    {
+        return new ByteSource(Observable.Defer(() => streamFactory().ToObservable(bufferSize)), length);
     }
 
     /// <summary>
     /// Creates a ByteSource from a Stream instance.
     /// </summary>
     /// <param name="stream">An existing Stream instance.</param>
-    /// <param name="leaveOpen">Whether to leave the stream open after completion.</param>
     /// <param name="bufferSize">Size of each emitted chunk.</param>
     /// <returns>An IByteSource.</returns>
     public static IByteSource FromStream(
@@ -92,12 +132,25 @@ public class ByteSource(IObservable<byte[]> bytes) : IByteSource
             throw new ArgumentNullException(nameof(stream));
         }
 
-        return new ByteSource(stream.ToObservable(bufferSize));
+        return new ByteSource(stream.ToObservable(bufferSize), GetRemainingLength(stream));
+    }
+
+    public static IByteSource FromStream(
+        Stream stream,
+        Maybe<long> length,
+        int bufferSize = DefaultBufferSize)
+    {
+        if (stream == null)
+        {
+            throw new ArgumentNullException(nameof(stream));
+        }
+
+        return new ByteSource(stream.ToObservable(bufferSize), length);
     }
 
     /// <summary>
     /// Creates a ByteSource from a string using a specified encoding and buffer size.
-    /// The getLength function is computed based on the number of bytes for that string.
+    /// Length metadata is computed from the encoded byte count.
     /// </summary>
     /// <param name="str">The source string.</param>
     /// <param name="encoding">The text encoding to use. Defaults to UTF-8 if null.</param>
@@ -110,18 +163,18 @@ public class ByteSource(IObservable<byte[]> bytes) : IByteSource
     {
         encoding ??= Encoding.UTF8;
 
-        return new ByteSource(str.ToByteStream(encoding, bufferSize));
+        return new ByteSource(str.ToByteStream(encoding, bufferSize), Maybe.From((long)encoding.GetByteCount(str)));
     }
 
     public static IByteSource FromString(
         string str)
     {
-        return new ByteSource(str.ToByteStream(Encoding.UTF8));
+        return FromString(str, Encoding.UTF8);
     }
 
     /// <summary>
     /// Creates a ByteSource from an asynchronous Stream factory.
-    /// The getLength function can provide a length if known.
+    /// Use the overload that accepts <see cref="Maybe{T}"/> when the length is known before the stream is created.
     /// </summary>
     /// <param name="streamFactory">A factory method that returns a Task of a Stream to read from.</param>
     /// <returns>An IByteSource.</returns>
@@ -129,7 +182,15 @@ public class ByteSource(IObservable<byte[]> bytes) : IByteSource
         Func<Task<Stream>> streamFactory,
         int bufferSize = DefaultBufferSize)
     {
-        return new ByteSource(Observable.FromAsync(streamFactory).SelectMany(stream => stream.ToObservable(bufferSize)));
+        return FromAsyncStreamFactory(streamFactory, Maybe<long>.None, bufferSize);
+    }
+
+    public static IByteSource FromAsyncStreamFactory(
+        Func<Task<Stream>> streamFactory,
+        Maybe<long> length,
+        int bufferSize = DefaultBufferSize)
+    {
+        return new ByteSource(Observable.FromAsync(streamFactory).SelectMany(stream => stream.ToObservable(bufferSize)), length);
     }
 
     /// <summary>
@@ -143,13 +204,14 @@ public class ByteSource(IObservable<byte[]> bytes) : IByteSource
     /// <returns>An IByteSource that manages the resource lifecycle.</returns>
     public static IByteSource FromDisposableAsync<T>(
         Func<Task<Result<T>>> resourceFactory,
-        Func<T, IByteSource> byteSourceFactory) where T : IDisposable
+        Func<T, IByteSource> byteSourceFactory,
+        Maybe<long> length = default) where T : IDisposable
     {
         return new ByteSource(Observable.Defer(() =>
             Observable.FromAsync(resourceFactory)
                 .SelectMany(result => result.IsSuccess
                     ? byteSourceFactory(result.Value).Bytes.Finally(() => result.Value.Dispose())
-                    : Observable.Throw<byte[]>(new InvalidOperationException(result.Error)))));
+                    : Observable.Throw<byte[]>(new InvalidOperationException(result.Error)))), length);
     }
 
     /// <summary>
@@ -163,13 +225,15 @@ public class ByteSource(IObservable<byte[]> bytes) : IByteSource
     /// <returns>An IByteSource that manages the resource lifecycle.</returns>
     public static IByteSource FromDisposableAsync<T>(
         Func<Task<Result<T>>> resourceFactory,
-        Func<T, Result<IByteSource>> transform) where T : IDisposable
+        Func<T, Result<IByteSource>> transform,
+        Maybe<long> length = default) where T : IDisposable
     {
         return FromDisposableAsync(
             resourceFactory,
             resource => transform(resource).Match(
                 src => src,
-                error => throw new InvalidOperationException(error)));
+                error => throw new InvalidOperationException(error)),
+            length);
     }
 
     /// <summary>
@@ -183,7 +247,8 @@ public class ByteSource(IObservable<byte[]> bytes) : IByteSource
     /// <returns>An IByteSource that manages the resource lifecycle.</returns>
     public static IByteSource FromDisposableAsync<T>(
         Func<Task<Result<T>>> resourceFactory,
-        Func<T, Task<Result<IByteSource>>> transformAsync) where T : IDisposable
+        Func<T, Task<Result<IByteSource>>> transformAsync,
+        Maybe<long> length = default) where T : IDisposable
     {
         return new ByteSource(Observable.Defer(() =>
             Observable.FromAsync(resourceFactory)
@@ -203,7 +268,7 @@ public class ByteSource(IObservable<byte[]> bytes) : IByteSource
                             return Observable.Throw<byte[]>(new InvalidOperationException(error));
                         });
                 })
-                .Switch()));
+                .Switch()), length);
     }
 
     /// <summary>
@@ -214,5 +279,15 @@ public class ByteSource(IObservable<byte[]> bytes) : IByteSource
     public IDisposable Subscribe(IObserver<byte[]> observer)
     {
         return Bytes.Subscribe(observer);
+    }
+
+    private static Maybe<long> GetRemainingLength(Stream stream)
+    {
+        if (!stream.CanSeek)
+        {
+            return Maybe<long>.None;
+        }
+
+        return Math.Max(0, stream.Length - stream.Position);
     }
 }

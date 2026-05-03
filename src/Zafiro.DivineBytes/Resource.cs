@@ -1,3 +1,5 @@
+using CSharpFunctionalExtensions;
+
 namespace Zafiro.DivineBytes;
 
 public class Resource(string name, IByteSource source) : INamedByteSource
@@ -10,4 +12,5 @@ public class Resource(string name, IByteSource source) : INamedByteSource
     }
 
     public IObservable<byte[]> Bytes => source.Bytes;
+    public Maybe<long> Length => source.Length;
 }

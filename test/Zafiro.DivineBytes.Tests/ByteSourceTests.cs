@@ -7,6 +7,69 @@ namespace Zafiro.DivineBytes.Tests;
 public class ByteSourceTests
 {
     [Fact]
+    public void FromBytes_exposes_length_without_consuming_source()
+    {
+        var source = ByteSource.FromBytes([1, 2, 3]);
+
+        Assert.True(source.Length.HasValue);
+        Assert.Equal(3, source.Length.Value);
+    }
+
+    [Fact]
+    public void FromStream_exposes_remaining_seekable_length()
+    {
+        var stream = new MemoryStream([1, 2, 3, 4, 5]);
+        stream.Position = 2;
+
+        var source = ByteSource.FromStream(stream);
+
+        Assert.True(source.Length.HasValue);
+        Assert.Equal(3, source.Length.Value);
+    }
+
+    [Fact]
+    public void Concat_exposes_total_length_when_all_parts_are_known()
+    {
+        var first = ByteSource.FromBytes([1, 2]);
+        var second = ByteSource.FromString("abc");
+
+        var concatenated = ByteSource.Concat(first, second);
+
+        Assert.True(concatenated.Length.HasValue);
+        Assert.Equal(5, concatenated.Length.Value);
+    }
+
+    [Fact]
+    public void Concat_keeps_length_unknown_when_any_part_is_unknown()
+    {
+        var known = ByteSource.FromBytes([1, 2]);
+        var unknown = ByteSource.FromByteObservable(Observable.Return(new byte[] { 3 }));
+
+        var concatenated = ByteSource.Concat(known, unknown);
+
+        Assert.False(concatenated.Length.HasValue);
+    }
+
+    [Fact]
+    public async Task GetSize_uses_known_length_without_subscribing_to_bytes()
+    {
+        var subscribed = false;
+        var bytes = Observable.Create<byte[]>(observer =>
+        {
+            subscribed = true;
+            observer.OnNext([1, 2, 3]);
+            observer.OnCompleted();
+            return () => { };
+        });
+        var source = ByteSource.FromByteObservable(bytes, 42);
+
+        var size = await source.GetSize().ToTask();
+
+        Assert.Equal(42, size);
+        Assert.False(subscribed);
+    }
+
+    [Fact]
     public async Task ToByteStream_respects_buffer_boundaries()
     {
         var data = Enumerable.Range(0, 10_000).Select(i => (byte)(i % 256)).ToArray();
@@ -138,4 +201,3 @@ public class ByteSourceTests
         }
     }
 }
-

@@ -11,10 +11,10 @@ public static class PathMixin
             relativeTo.RouteFragments
                 .ZipLongest(path.RouteFragments, (x, y) => (x, y))
                 .SkipWhile(x => x.x == x.y)
-                .Select(x => { return x.x is null ? new[] { x.y } : new[] { "..", x.y }; })
+                .Select(x => x.x is null ? new[] { x.y } : new[] { "..", x.y })
                 .Transpose()
                 .SelectMany(x => x)
-                .Where(x => x is not default(string));
+                .OfType<string>();
 
         return new Path(relativePathChunks);
     }

@@ -16,7 +16,7 @@ public sealed class Path : ValueObject
 
     public Path(IEnumerable<string> relativePathChunks)
     {
-        RouteFragments = relativePathChunks;
+        RouteFragments = relativePathChunks.ToArray();
     }
 
     private Path() : this(Enumerable.Empty<string>())

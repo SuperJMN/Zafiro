@@ -65,6 +65,31 @@ public class AddSectionsTests
         sections.Should().ContainSingle(s => s.Id == "Real");
     }
 
+    [Fact]
+    public void SectionsBuilder_preserves_the_original_AddSection_binary_signature()
+    {
+        var method = typeof(SectionsBuilder).GetMethod(nameof(SectionsBuilder.AddSection),
+            new[] { typeof(string), typeof(string), typeof(object), typeof(SectionGroup), typeof(int), typeof(string) });
+
+        method.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void AddSection_can_assign_parent_id_when_all_hierarchy_arguments_are_provided()
+    {
+        var services = new ServiceCollection();
+
+        services.AddSections(builder =>
+        {
+            builder.AddSection<DummyViewModelA>("Child", "Child", null, null, 0, null, "Parent");
+        });
+
+        var provider = services.BuildServiceProvider();
+        var sections = provider.GetRequiredService<IEnumerable<ISection>>().ToList();
+
+        sections.Should().ContainSingle(s => s.Id == "Child" && s.ParentId == "Parent");
+    }
+
     private class DummyViewModelA;
     private class DummyViewModelB;
 }

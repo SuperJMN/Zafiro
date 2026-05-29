@@ -11,9 +11,10 @@ public partial class Section : ReactiveObject, ISection
     [Reactive] private int sortOrder;
     private string? shortName;
 
-    public Section(string name, IServiceProvider provider, Type initialContentType, object? icon = null, SectionGroup? group = null, string? friendlyName = null)
+    public Section(string name, IServiceProvider provider, Type initialContentType, object? icon = null, SectionGroup? group = null, string? friendlyName = null, string? parentId = null)
     {
         Id = name;
+        ParentId = parentId;
         FriendlyName = friendlyName ?? name;
         Group = group ?? new SectionGroup();
         Icon = icon;
@@ -28,6 +29,7 @@ public partial class Section : ReactiveObject, ISection
     }
 
     public string Id { get; }
+    public string? ParentId { get; }
     public string? ShortName
     {
         get => string.IsNullOrWhiteSpace(shortName)

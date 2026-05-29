@@ -32,9 +32,28 @@ public static class NavigationServiceCollectionExtensions
 
     public static IServiceCollection AddSectionsFromAttributes(this IServiceCollection serviceCollection, Assembly assembly, ILogger? logger = null, IScheduler? scheduler = null)
     {
+        return serviceCollection.AddSectionsFromAttributes(assembly, _ => true, logger, scheduler);
+    }
+
+    public static IServiceCollection AddSectionsFromAttributes(this IServiceCollection serviceCollection, Assembly assembly, Func<Type, bool> predicate, ILogger? logger = null, IScheduler? scheduler = null)
+    {
+        var sectionTypes = assembly.GetTypes()
+            .Where(Extensions.IsSection)
+            .Where(predicate)
+            .ToList();
+
+        foreach (var type in sectionTypes)
+        {
+            var sectionAttr = type.GetCustomAttribute<SectionAttribute>();
+            if (sectionAttr is not null)
+            {
+                RegisterSectionViewModel(serviceCollection, type, sectionAttr);
+            }
+        }
+
         return serviceCollection.AddSections(builder =>
         {
-            foreach (var type in assembly.GetTypes().Where(Extensions.IsSection))
+            foreach (var type in sectionTypes)
             {
                 var sectionAttr = type.GetCustomAttribute<SectionAttribute>();
                 if (sectionAttr is null)
@@ -51,6 +70,8 @@ public static class NavigationServiceCollectionExtensions
                 var contractType = sectionAttr.ContractType ?? type;
                 var name = sectionAttr.Name ?? displayName;
                 var iconSource = sectionAttr.Icon ?? "fa-window-maximize";
+                var parentId = sectionAttr.ParentId;
+                var shortName = sectionAttr.ShortName;
 
                 var groupAttr = type.GetCustomAttribute<SectionGroupAttribute>();
                 SectionGroup? group = null;
@@ -59,10 +80,32 @@ public static class NavigationServiceCollectionExtensions
                     group = new SectionGroup(groupAttr.FriendlyName ?? groupAttr.Key);
                 }
 
-                var method = typeof(SectionsBuilder).GetMethod(nameof(SectionsBuilder.AddSection))!.MakeGenericMethod(contractType);
-                method.Invoke(builder, new object?[] { name, friendlyName, new Icon { Source = iconSource }, group, sectionAttr.SortIndex });
+                var method = typeof(SectionsBuilder).GetMethod(nameof(SectionsBuilder.AddSection),
+                    [
+                        typeof(string),
+                        typeof(string),
+                        typeof(object),
+                        typeof(SectionGroup),
+                        typeof(int),
+                        typeof(string),
+                        typeof(string)
+                    ])!.MakeGenericMethod(contractType);
+                method.Invoke(builder, new object?[] { name, friendlyName, new Icon { Source = iconSource }, group, sectionAttr.SortIndex, shortName, parentId });
             }
         }, logger, scheduler);
+    }
+
+    private static void RegisterSectionViewModel(IServiceCollection services, Type implementationType, SectionAttribute sectionAttribute)
+    {
+        var contractType = sectionAttribute.ContractType ?? implementationType;
+
+        if (contractType == implementationType)
+        {
+            services.TryAddTransient(implementationType);
+            return;
+        }
+
+        services.TryAddTransient(contractType, implementationType);
     }
 
     private static void EnsureNavigatorRegistration(IServiceCollection services, ILogger? logger, IScheduler? scheduler)

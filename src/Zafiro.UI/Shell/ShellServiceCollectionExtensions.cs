@@ -12,7 +12,7 @@ public static class ShellServiceCollectionExtensions
     /// <summary>
     /// Registers the complete Zafiro Shell infrastructure:
     /// <list type="bullet">
-    ///     <item><see cref="IShell"/> → <see cref="Shell"/></item>
+    ///     <item><see cref="IShell"/> and <see cref="IHierarchicalShell"/> → <see cref="Shell"/></item>
     ///     <item><see cref="INavigator"/> (scoped, one per section)</item>
     /// </list>
     /// After calling this method, the consumer only needs to call <c>services.AddAllSectionsFromAttributes()</c>
@@ -25,7 +25,9 @@ public static class ShellServiceCollectionExtensions
         this IServiceCollection services,
         ILogger? logger = null)
     {
-        services.AddSingleton<IShell, Shell>();
+        services.AddSingleton<Shell>();
+        services.AddSingleton<IShell>(provider => provider.GetRequiredService<Shell>());
+        services.AddSingleton<IHierarchicalShell>(provider => provider.GetRequiredService<Shell>());
         services.TryAddScoped<INavigator>(sp =>
             new Navigator(sp, logger.AsMaybe(), RxSchedulers.MainThreadScheduler));
 

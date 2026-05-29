@@ -18,6 +18,11 @@ public class SectionAttribute(string? name = null, string? icon = null, int sort
     /// </summary>
     public string? ShortName { get; set; }
 
+    /// <summary>
+    /// Optional parent section id. Sections without a parent id are root sections.
+    /// </summary>
+    public string? ParentId { get; set; }
+
     public string? Icon { get; } = icon;
     public int SortIndex { get; } = sortIndex;
 

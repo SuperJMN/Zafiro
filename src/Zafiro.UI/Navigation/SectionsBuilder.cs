@@ -12,9 +12,14 @@ public class SectionsBuilder
     /// </summary>
     public SectionsBuilder AddSection<T>(string name, string friendlyName, object? icon = null, SectionGroup? group = null, int sortOrder = 0, string? shortName = null) where T : class
     {
+        return AddSection<T>(name, friendlyName, icon, group, sortOrder, shortName, null);
+    }
+
+    public SectionsBuilder AddSection<T>(string name, string friendlyName, object? icon, SectionGroup? group, int sortOrder, string? shortName, string? parentId) where T : class
+    {
         sectionFactories.Add((provider, scheduler, logger) =>
         {
-            var root = new Section(name, provider, typeof(T), icon, group, friendlyName)
+            var root = new Section(name, provider, typeof(T), icon, group, friendlyName, parentId)
             {
                 SortOrder = sortOrder,
                 ShortName = shortName
@@ -23,8 +28,6 @@ public class SectionsBuilder
         });
         return this;
     }
-
-    // Backwards-compat overload: ignore isPrimary
 
     public IEnumerable<ISection> Build(IServiceProvider provider, IScheduler? scheduler = null, Maybe<ILogger> logger = default)
     {

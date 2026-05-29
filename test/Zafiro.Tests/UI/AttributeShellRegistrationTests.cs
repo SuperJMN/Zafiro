@@ -20,7 +20,7 @@ public class AttributeShellRegistrationTests
         services.AddSectionsFromAttributes(typeof(AttributeShellRegistrationTests).Assembly, IsDemoSection);
 
         using var provider = services.BuildServiceProvider();
-        using var shell = (Shell)provider.GetRequiredService<IShell>();
+        using var shell = (Shell)provider.GetRequiredService<IHierarchicalShell>();
 
         shell.RootLevel.Sections.Select(section => section.Id).Should().Equal("workspace");
         shell.SelectedPath.Value.Select(section => section.Id).Should().Equal("workspace", "users", "active-users");

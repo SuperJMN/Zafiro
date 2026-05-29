@@ -5,7 +5,7 @@ using Zafiro.UI.Navigation.Sections;
 namespace Zafiro.UI.Shell;
 
 [PublicAPI]
-public class Shell : IShell, IDisposable
+public class Shell : IHierarchicalShell, IDisposable
 {
     private readonly Dictionary<string, ISection> sectionsById;
     private readonly IReadOnlyDictionary<string, IReadOnlyList<ISection>> childrenByParentId;
@@ -17,11 +17,11 @@ public class Shell : IShell, IDisposable
         Sections = sections.ToList();
         sectionsById = Sections.ToDictionary(section => section.Id);
         childrenByParentId = Sections
-            .Where(section => !string.IsNullOrWhiteSpace(section.ParentId))
-            .GroupBy(section => section.ParentId!)
+            .Where(section => !string.IsNullOrWhiteSpace(GetParentId(section)))
+            .GroupBy(section => GetParentId(section)!)
             .ToDictionary(group => group.Key, group => Sort(group).ToList() as IReadOnlyList<ISection>);
 
-        var rootSections = Sort(Sections.Where(section => string.IsNullOrWhiteSpace(section.ParentId))).ToList();
+        var rootSections = Sort(Sections.Where(section => string.IsNullOrWhiteSpace(GetParentId(section)))).ToList();
         var initialRoot = rootSections.FirstOrDefault(section => section.IsVisible);
         var initialSection = initialRoot is null ? null : ResolveSelectedSection(initialRoot);
 
@@ -118,7 +118,8 @@ public class Shell : IShell, IDisposable
         {
             path.Push(current);
 
-            if (string.IsNullOrWhiteSpace(current.ParentId) || !sectionsById.TryGetValue(current.ParentId, out var parent))
+            var parentId = GetParentId(current);
+            if (string.IsNullOrWhiteSpace(parentId) || !sectionsById.TryGetValue(parentId, out var parent))
             {
                 break;
             }
@@ -158,5 +159,10 @@ public class Shell : IShell, IDisposable
         {
             level.Dispose();
         }
+    }
+
+    private static string? GetParentId(ISection section)
+    {
+        return section is IHierarchicalSection hierarchicalSection ? hierarchicalSection.ParentId : null;
     }
 }

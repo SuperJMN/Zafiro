@@ -3,7 +3,7 @@ using ReactiveUI.SourceGenerators;
 
 namespace Zafiro.UI.Navigation.Sections;
 
-public partial class Section : ReactiveObject, ISection
+public partial class Section : ReactiveObject, IHierarchicalSection
 {
     private readonly Lazy<INavigator> navigatorLazy;
     private readonly IServiceScope sectionScope;

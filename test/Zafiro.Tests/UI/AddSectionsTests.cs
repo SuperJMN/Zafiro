@@ -87,7 +87,9 @@ public class AddSectionsTests
         var provider = services.BuildServiceProvider();
         var sections = provider.GetRequiredService<IEnumerable<ISection>>().ToList();
 
-        sections.Should().ContainSingle(s => s.Id == "Child" && s.ParentId == "Parent");
+        sections.Should().ContainSingle(s => s.Id == "Child")
+            .Which.Should().BeAssignableTo<IHierarchicalSection>()
+            .Which.ParentId.Should().Be("Parent");
     }
 
     private class DummyViewModelA;

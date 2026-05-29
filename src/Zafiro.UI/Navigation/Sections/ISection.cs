@@ -7,7 +7,6 @@ public interface ISection : INotifyPropertyChanged, IDisposable
     bool IsVisible { get; set; }
     int SortOrder { get; set; }
     string Id { get; }
-    string? ParentId { get; }
     public string? ShortName { get; }
     string FriendlyName { get; }
     SectionGroup Group { get; }

@@ -10,6 +10,7 @@
         <PackageVersion Include="DotNet.Testcontainers" Version="1.6.0"/>
         <PackageVersion Include="DotnetPackaging.AppImage" Version="2.0.16"/>
         <PackageVersion Include="DotnetPackaging.Deb" Version="2.0.15"/>
+        <PackageVersion Include="DynamicData" Version="9.4.31"/>
         <PackageVersion Include="ExtendedXmlSerializer" Version="3.7.10"/>
         <PackageVersion Include="FluentAssertions" Version="8.8.0"/>
         <PackageVersion Include="JetBrains.Annotations" Version="2025.2.2"/>

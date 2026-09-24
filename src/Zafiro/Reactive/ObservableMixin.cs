@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
@@ -12,7 +13,6 @@ using System.Reactive.Disposables.Fluent;
 using System.Reactive.Linq;
 using DynamicData;
 using DynamicData.Binding;
-using ReactiveUI;
 
 namespace Zafiro.Reactive;
 
@@ -147,7 +147,7 @@ public static class ObservableMixin
         IScheduler scheduler = null)
     {
         strategy ??= ExponentialBackoff;
-        scheduler ??= RxSchedulers.TaskpoolScheduler;
+        scheduler ??= TaskPoolScheduler.Default;
 
         if (retryOnError == null)
         {
@@ -224,13 +224,14 @@ public static class ObservableMixin
     public static IDisposable UpdateCollectionWhenSomeOtherCollectionObservableChanges<T, TItem>(
         this T parent,
         Expression<Func<T, ReadOnlyObservableCollection<TItem>>> selector,
-        out ReadOnlyObservableCollection<TItem> collection) where TItem : notnull where T : ReactiveObject
+        out ReadOnlyObservableCollection<TItem> collection) where TItem : notnull where T : INotifyPropertyChanged
     {
         CompositeDisposable disposable = new();
         var source = new SourceList<TItem>()
             .DisposeWith(disposable);
 
-        parent.WhenAnyValue(selector)
+        parent.WhenPropertyChanged(selector)
+            .Select(property => property.Value)
             .Do(r => source.EditDiff(r))
             .Select(r => r.ToObservableChangeSet())
             .Switch()

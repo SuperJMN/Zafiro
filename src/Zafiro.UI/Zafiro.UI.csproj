@@ -8,6 +8,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions"/>
         <PackageReference Include="ReactiveProperty"/>
+        <PackageReference Include="ReactiveUI"/>
         <PackageReference Include="ReactiveUI.SourceGenerators">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

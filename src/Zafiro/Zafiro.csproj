@@ -10,16 +10,17 @@
 
     <ItemGroup>
         <PackageReference Include="CSharpFunctionalExtensions" />
+        <PackageReference Include="DynamicData" />
         <PackageReference Include="JetBrains.Annotations" />
         <PackageReference Include="Microsoft.Extensions.Http" />
         <PackageReference Include="Microsoft.Extensions.Logging" />
         <PackageReference Include="Microsoft.Reactive.Testing" />
         <PackageReference Include="morelinq" />
         <PackageReference Include="NodaTime" />
-        <PackageReference Include="ReactiveUI" />
         <PackageReference Include="Serilog" />
         <PackageReference Include="System.IO.Abstractions" />
         <PackageReference Include="System.IO.Pipelines" />
+        <PackageReference Include="System.Reactive" />
     </ItemGroup>
     
 </Project>

@@ -7,7 +7,7 @@ Project scope: this file applies to the Zafiro library subtree at libs/Zafiro.
 - Tech stack: .NET 8 (targets net8.0). Any recent SDK (8+; 9.x works) is fine. An SDK pin exists at src/global.json (7.0.100) with roll-forward enabled.
 - Solution: Zafiro.sln groups core libraries, filesystem layers/implementations, UI helpers, tests, and UI samples.
 - Central package/version management via Directory.Packages.props and Directory.Build.props; common NuGet/pack metadata in src/Common.props.
-- CI: azure-pipelines.yml uses DotnetDeployer.Tool to package and publish on master; dry-run on other branches.
+- CI: DotnetDeployer.Fleet tracks master. Each merge builds and tests Zafiro.sln in Release and, if the tests pass, publishes the NuGet packages with deployer.yaml (NUGET_API_KEY comes from Fleet).
 
 Common commands
 
@@ -40,7 +40,6 @@ Common commands
   - Dry-run (no push): dotnetdeployer nuget --api-key "$NUGET_API_KEY" --no-push
   - Real publish (mirrors CI on master): dotnetdeployer nuget --api-key "$NUGET_API_KEY"
   - Optionally, create a GitHub release: dotnetdeployer release
-  - CI reference: see azure-pipelines.yml for the exact flow used on master.
 
 Big-picture architecture
 
